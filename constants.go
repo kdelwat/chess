@@ -15,3 +15,5 @@ const Black = 0x40
 const OffBoard = 0x88
 const Sliding = 0x04
 const Piece = 0x0F
+
+const BoardSize = 128

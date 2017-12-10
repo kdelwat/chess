@@ -191,8 +191,7 @@ func generateRegularMoves(position position, index int, piece byte) []move {
 		newIndex := index
 
 		for {
-			newIndex = index + offset
-
+			newIndex = newIndex + offset
 			// skip if new position is off the board
 			if !isOnBoard(newIndex) {
 				break

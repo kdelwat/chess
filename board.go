@@ -1,15 +1,12 @@
 package main
 
 type position struct {
-	board                   [128]byte
-	whiteCanCastleKingside  bool
-	whiteCanCastleQueenside bool
-	blackCanCastleKingside  bool
-	blackCanCastleQueenside bool
-	toMove                  byte
-	enPassantTarget         int
-	halfmove                int
-	fullmove                int
+	board           [128]byte
+	castling        map[byte]map[int]bool
+	toMove          byte
+	enPassantTarget int
+	halfmove        int
+	fullmove        int
 }
 
 var startBoard = [128]byte{

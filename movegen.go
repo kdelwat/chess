@@ -12,6 +12,11 @@ var moveOffsets = map[byte][]int{
 	Knight: {14, 31, 33, 18, -14, -31, -33, -18},
 }
 
+var castlingBlocks = map[byte]map[int][]int{
+	White: map[int][]int{KingCastle: {5, 6}, QueenCastle: {1, 2, 3}},
+	Black: map[int][]int{KingCastle: {117, 118}, QueenCastle: {113, 114, 115}},
+}
+
 func (m move) From() byte {
 	return byte((m & (0xFF << 8)) >> 8)
 }
@@ -88,18 +93,24 @@ func createDoublePawnPush(from int, to int) move {
 	return m
 }
 
+func clearToCastle(position position, side int) bool {
+	for _, index := range castlingBlocks[position.toMove][side] {
+		if piecePresent(position, index) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func generateCastlingMoves(position position) []move {
 	var moves []move
 
-	if position.toMove == White && position.whiteCanCastleKingside && !piecePresent(position, 5) && !piecePresent(position, 6) {
-		moves = append(moves, move(KingCastle))
-	} else if position.toMove == Black && position.blackCanCastleKingside && !piecePresent(position, 117) && !piecePresent(position, 118) {
+	if position.castling[position.toMove][KingCastle] && clearToCastle(position, KingCastle) {
 		moves = append(moves, move(KingCastle))
 	}
 
-	if position.toMove == White && position.whiteCanCastleQueenside && !piecePresent(position, 1) && !piecePresent(position, 2) && !piecePresent(position, 3) {
-		moves = append(moves, move(QueenCastle))
-	} else if position.toMove == Black && position.blackCanCastleQueenside && !piecePresent(position, 113) && !piecePresent(position, 114) && !piecePresent(position, 115) {
+	if position.castling[position.toMove][QueenCastle] && clearToCastle(position, QueenCastle) {
 		moves = append(moves, move(QueenCastle))
 	}
 

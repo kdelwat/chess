@@ -124,16 +124,16 @@ func toFEN(position position) string {
 		player = "b"
 	}
 
-	if position.whiteCanCastleKingside {
+	if position.castling[White][KingCastle] {
 		castling += "K"
 	}
-	if position.whiteCanCastleQueenside {
+	if position.castling[White][QueenCastle] {
 		castling += "Q"
 	}
-	if position.blackCanCastleKingside {
+	if position.castling[Black][KingCastle] {
 		castling += "k"
 	}
-	if position.blackCanCastleQueenside {
+	if position.castling[Black][QueenCastle] {
 		castling += "q"
 	}
 

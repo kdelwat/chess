@@ -26,3 +26,15 @@ func isOnBoard(index int) bool {
 func piecePresent(position position, index int) bool {
 	return isPiece(position.board[index])
 }
+
+func finalRank(index int, color byte) bool {
+	if color == White && index >= 112 && index <= 119 {
+		return true
+	}
+
+	if color == Black && index >= 0 && index <= 7 {
+		return true
+	}
+
+	return false
+}

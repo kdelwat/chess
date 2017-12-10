@@ -22,3 +22,9 @@ const BoardSize = 128
 // moves
 const Capture = 0x1 << 18
 const DoublePawnPush = 0x1 << 16
+const Promotion = 0x1 << 19
+
+const KnightPromotion = 0x0
+const BishopPromotion = 0x1 << 16
+const RookPromotion = 0x1 << 17
+const QueenPromotion = 0x2 << 16

@@ -28,6 +28,36 @@ func (m *move) setTo(to byte) {
 	*m = *m | move(to)
 }
 
+func createPromotionMove(from int, to int, pieceType byte) move {
+	var m move = 0
+
+	m = m | move(to)
+	m = m | (move(from) << 8)
+
+	m = m | Promotion
+
+	switch pieceType {
+	case Knight:
+		{
+			m = m | KnightPromotion
+		}
+	case Bishop:
+		{
+			m = m | BishopPromotion
+		}
+	case Rook:
+		{
+			m = m | RookPromotion
+		}
+	case Queen:
+		{
+			m = m | QueenPromotion
+		}
+	}
+
+	return m
+}
+
 func createQuietMove(from int, to int) move {
 	var m move = 0
 
@@ -101,9 +131,34 @@ func generateMoves(position position, color byte) []move {
 				}
 
 				if !piecePresent(position, newIndex) {
-					newMove := createQuietMove(i, newIndex)
-					showMove(newMove)
-					moves = append(moves, newMove)
+
+					// check promotions
+					if finalRank(newIndex, color) {
+						// do promo
+						var newMove move
+
+						newMove = createPromotionMove(i, newIndex, Knight)
+						showMove(newMove)
+						moves = append(moves, newMove)
+
+						newMove = createPromotionMove(i, newIndex, Bishop)
+						showMove(newMove)
+						moves = append(moves, newMove)
+
+						newMove = createPromotionMove(i, newIndex, Rook)
+						showMove(newMove)
+						moves = append(moves, newMove)
+
+						newMove = createPromotionMove(i, newIndex, Queen)
+						showMove(newMove)
+						moves = append(moves, newMove)
+
+					} else {
+						newMove := createQuietMove(i, newIndex)
+						showMove(newMove)
+						moves = append(moves, newMove)
+					}
+
 				}
 
 				// try attacks

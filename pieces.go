@@ -9,7 +9,7 @@ func isSliding(piece byte) bool {
 }
 
 func isPawn(piece byte) bool {
-	return (piece&Pawn != 0)
+	return (getPieceType(piece) == Pawn)
 }
 
 func isPiece(piece byte) bool {
@@ -26,4 +26,16 @@ func getPieceType(piece byte) byte {
 
 func getColor(piece byte) byte {
 	return piece & Color
+}
+
+func isStartingPawn(index int, color byte) bool {
+	if color == White && index >= 16 && index <= 23 {
+		return true
+	}
+
+	if color == Black && index >= 96 && index <= 103 {
+		return true
+	}
+
+	return false
 }

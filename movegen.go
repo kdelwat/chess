@@ -13,7 +13,7 @@ var moveOffsets = map[byte][]int{
 }
 
 func (m move) From() byte {
-	return byte((m & 0xFF) >> 8)
+	return byte((m & (0xFF << 8)) >> 8)
 }
 
 func (m move) To() byte {
@@ -49,6 +49,16 @@ func createCaptureMove(from int, to int) move {
 	return m
 }
 
+func createDoublePawnPush(from int, to int) move {
+	var m move = 0
+
+	m = m | move(to)
+	m = m | (move(from) << 8)
+	m = m | DoublePawnPush
+
+	return m
+}
+
 func generateMoves(position position, color byte) []move {
 	var moves []move
 
@@ -63,7 +73,64 @@ func generateMoves(position position, color byte) []move {
 			fmt.Print("\n")
 
 			if isPawn(piece) {
-				// PAWN LOGIC
+				// try double push
+				if isStartingPawn(i, color) {
+					// do double push
+					var newIndex int
+
+					if color == White {
+						newIndex = i + 32
+					} else {
+						newIndex = i - 32
+					}
+
+					if !piecePresent(position, newIndex) {
+						newMove := createDoublePawnPush(i, newIndex)
+						showMove(newMove)
+						moves = append(moves, newMove)
+					}
+				}
+
+				// try normal move forwards
+				var newIndex int
+
+				if color == White {
+					newIndex = i + 16
+				} else {
+					newIndex = i - 16
+				}
+
+				if !piecePresent(position, newIndex) {
+					newMove := createQuietMove(i, newIndex)
+					showMove(newMove)
+					moves = append(moves, newMove)
+				}
+
+				// try attacks
+
+				var leftAttack int
+				var rightAttack int
+
+				if color == White {
+					leftAttack = i + 15
+					rightAttack = i + 17
+				} else {
+					leftAttack = i - 15
+					rightAttack = i - 17
+				}
+
+				if isOnBoard(leftAttack) && piecePresent(position, leftAttack) && getColor(position.board[leftAttack]) != color {
+					newMove := createCaptureMove(i, leftAttack)
+					showMove(newMove)
+					moves = append(moves, newMove)
+				}
+
+				if isOnBoard(rightAttack) && piecePresent(position, rightAttack) && getColor(position.board[rightAttack]) != color {
+					newMove := createCaptureMove(i, rightAttack)
+					showMove(newMove)
+					moves = append(moves, newMove)
+				}
+
 			} else if isSliding(piece) {
 				// SLIDING
 			} else {
@@ -90,6 +157,8 @@ func generateMoves(position position, color byte) []move {
 					showMove(newMove)
 				}
 			}
+
+			fmt.Print("\n")
 		}
 	}
 

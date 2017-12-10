@@ -21,3 +21,4 @@ const BoardSize = 128
 
 // moves
 const Capture = 0x1 << 18
+const DoublePawnPush = 0x1 << 16

@@ -51,9 +51,11 @@ func showMove(move move) {
 	var formatString string
 
 	if move&Capture != 0 {
-		formatString = "Capture from %v to %v"
+		formatString = "Capture from %v to %v\n"
+	} else if move&DoublePawnPush != 0 {
+		formatString = "Double pawn push from %v to %v\n"
 	} else {
-		formatString = "Quiet move from %v to %v"
+		formatString = "Quiet move from %v to %v\n"
 	}
 
 	fmt.Printf(formatString, move.From(), move.To())

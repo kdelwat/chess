@@ -256,3 +256,81 @@ func generateMoves(position position) []move {
 
 	return moves
 }
+
+// doesn't handle en passant because currently only used for checking checks
+func buildAttackMap(position position, toMove byte) [128]byte {
+	var attackMap [128]byte
+
+	for i := 0; i < BoardSize; i++ {
+
+		piece := position.board[i]
+
+		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == toMove {
+			fmt.Printf("Generating attacks for piece: %v\n", pieceToString(position.board[i]))
+
+			if isPawn(piece) {
+				// to change offset based on playing color
+				var direction int
+				if position.toMove == White {
+					direction = 1
+				} else {
+					direction = -1
+				}
+
+				leftAttack := i + 15*direction
+				rightAttack := i + 17*direction
+
+				attackMap[leftAttack] = 1
+				attackMap[rightAttack] = 1
+			} else {
+				for _, offset := range moveOffsets[getPieceType(piece)] {
+					newIndex := i
+
+					for {
+						newIndex = newIndex + offset
+						// skip if new position is off the board
+						if !isOnBoard(newIndex) {
+							break
+						}
+
+						attackMap[newIndex] = 1
+
+						if piecePresent(position, newIndex) {
+							break
+						}
+
+						if !isSliding(piece) {
+							break
+						}
+					}
+				}
+
+			}
+		}
+
+	}
+
+	return attackMap
+}
+
+func isAttacked(position position, attackingColor byte, index int) bool {
+	attackMap := buildAttackMap(position, attackingColor)
+
+	return attackMap[index] == 1
+}
+
+func isKingInCheck(position position, attackingColor byte) bool {
+	// find the king
+	var kingIndex int
+
+	for i := 0; i < BoardSize; i++ {
+		piece := position.board[i]
+
+		if isOnBoard(i) && isPiece(piece) && getPieceType(piece) == King && getColor(piece) != attackingColor {
+			kingIndex = i
+			break
+		}
+	}
+
+	return isAttacked(position, attackingColor, kingIndex)
+}

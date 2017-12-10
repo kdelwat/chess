@@ -15,13 +15,20 @@ func (m move) isCapture() bool {
 	return (m&Capture != 0)
 }
 
+func (m move) isDoublePawnPush() bool {
+	//fmt.Printf("Checking double pawn push with move %b, typemask %b")
+	return ((m&MoveTypeMask)>>16 == 1)
+}
+
 func makeMove(position *position, move move) moveArtifacts {
 	var artifacts = moveArtifacts{
-		halfmove:          position.halfmove, // decrement this on capture or pawn move
+		halfmove:          position.halfmove,
 		castling:          position.castling,
-		enPassantPosition: position.enPassantTarget, // change this
+		enPassantPosition: position.enPassantTarget,
 		captured:          0,
 	}
+
+	position.enPassantTarget = -1
 
 	if position.toMove == White {
 		position.toMove = Black
@@ -36,8 +43,20 @@ func makeMove(position *position, move move) moveArtifacts {
 		// make quiet move
 		pieceMoved := position.board[move.From()]
 
+		if isPawn(pieceMoved) {
+			position.halfmove = 0
+		}
+
 		position.board[move.From()] = 0
 		position.board[move.To()] = pieceMoved
+	} else if move.isDoublePawnPush() {
+		pieceMoved := position.board[move.From()]
+
+		position.board[move.From()] = 0
+		position.board[move.To()] = pieceMoved
+
+		position.enPassantTarget = int(move.From()+move.To()) / 2
+		position.halfmove = 0
 	} else if move.isCapture() {
 		// make capture
 		pieceMoved := position.board[move.From()]
@@ -72,6 +91,13 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 
 		position.board[move.To()] = 0
 		position.board[move.From()] = pieceMoved
+	} else if move.isDoublePawnPush() {
+		pieceMoved := position.board[move.To()]
+
+		position.board[move.To()] = 0
+		position.board[move.From()] = pieceMoved
+
+		position.enPassantTarget = artifacts.enPassantPosition
 	} else if move.isCapture() {
 		// make capture
 		pieceMoved := position.board[move.To()]

@@ -8,6 +8,34 @@ type testCase struct {
 	expectedMoves int
 }
 
+type testCheck struct {
+	fen           string
+	expectedCheck bool
+}
+
+func TestCheck(t *testing.T) {
+	cases := []testCheck{
+		{"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false},
+	}
+
+	for _, test := range cases {
+		position := fromFen(test.fen)
+
+		var attackingColor byte
+		if position.toMove == White {
+			attackingColor = Black
+		} else {
+			attackingColor = White
+		}
+
+		checked := isKingInCheck(position, attackingColor)
+
+		if checked != test.expectedCheck {
+			t.Errorf("Check test failed!\nFEN: %v\nExpected: %v\nActual: %v\n", test.fen, test.expectedCheck, checked)
+		}
+	}
+}
+
 func TestMoveGen(t *testing.T) {
 	cases := []testCase{
 		{"Starting position", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 20},

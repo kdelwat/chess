@@ -130,7 +130,6 @@ func fromFen(fen string) position {
 
 	var startBoard [128]byte
 
-	fmt.Printf("Converting board position: %v\n", boardString)
 	boardIndex := 112
 	for _, char := range boardString {
 		// skip slashes seperating ranks

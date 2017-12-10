@@ -44,3 +44,7 @@ func finalRank(index int, color byte) bool {
 
 	return false
 }
+
+func isEnPassantTarget(position position, index int) bool {
+	return position.enPassantTarget != -1 && (position.enPassantTarget == index-1 || position.enPassantTarget == index+1)
+}

@@ -157,24 +157,12 @@ func generatePawnMoves(position position, index int) []move {
 	leftAttack := index + 15*direction
 	rightAttack := index + 17*direction
 
-	leftEnPassant := index - 1
-	rightEnPassant := index + 1
-
 	attackIndices := [2]int{leftAttack, rightAttack}
 
 	for _, attackIndex := range attackIndices {
 
-		var enPassantIndex int
-
-		if attackIndex == leftAttack {
-			enPassantIndex = leftEnPassant
-		} else {
-			enPassantIndex = rightEnPassant
-		}
-
 		if isOnBoard(attackIndex) && piecePresent(position, attackIndex) && getColor(position.board[attackIndex]) != position.toMove {
-
-			// check promo
+			// check promotions
 			if finalRank(attackIndex, position.toMove) {
 				moves = append(moves, createPromotionCaptureMove(index, newIndex, Knight))
 				moves = append(moves, createPromotionCaptureMove(index, newIndex, Bishop))
@@ -183,9 +171,13 @@ func generatePawnMoves(position position, index int) []move {
 			} else {
 				moves = append(moves, createCaptureMove(index, attackIndex))
 			}
-		} else if isOnBoard(attackIndex) && piecePresent(position, enPassantIndex) && getColor(position.board[enPassantIndex]) != position.toMove && pawnHasDoubledAdvanced(position.board[enPassantIndex]) {
-			moves = append(moves, createEnPassantCaptureMove(index, enPassantIndex))
 		}
+
+	}
+
+	// opt target - must be on 4th or 5th rank
+	if isEnPassantTarget(position, index) {
+		moves = append(moves, createEnPassantCaptureMove(index, position.enPassantTarget))
 
 	}
 

@@ -49,6 +49,7 @@ func pieceToString(piece byte) string {
 }
 
 func showPosition(position position) {
+	fmt.Print("====BOARD====\n")
 	for i := 0; i < 128; i++ {
 		if i&OffBoard == 0 {
 			fmt.Print(pieceToString(position.board[i]))
@@ -57,6 +58,22 @@ func showPosition(position position) {
 			fmt.Print("\n")
 		}
 	}
+
+	var nextMove string
+
+	if position.toMove == White {
+		nextMove = "white"
+	} else {
+		nextMove = "black"
+	}
+
+	castling := castleString(position)
+	enPassant := enPassantString(position)
+
+	halfMove := strconv.FormatInt(int64(position.halfmove), 10)
+	fullMove := strconv.FormatInt(int64(position.fullmove), 10)
+
+	fmt.Printf("====DETAILS====\nNext move: %v\nCastling: %v\nEn passant target: %v\nHalfmove: %v\nFullmove: %v\n\n", nextMove, castling, enPassant, halfMove, fullMove)
 }
 
 func showSliding(position position) {
@@ -172,6 +189,43 @@ func fromFen(fen string) position {
 	return startPosition
 }
 
+func castleString(position position) string {
+	var castling string
+
+	if position.castling[White][KingCastle] {
+		castling += "K"
+	}
+	if position.castling[White][QueenCastle] {
+		castling += "Q"
+	}
+	if position.castling[Black][KingCastle] {
+		castling += "k"
+	}
+	if position.castling[Black][QueenCastle] {
+		castling += "q"
+	}
+
+	if len(castling) == 0 {
+		castling = "-"
+	}
+
+	return castling
+}
+
+func enPassantString(position position) string {
+	var enPassant string
+
+	if position.enPassantTarget == -1 {
+		enPassant = "-"
+	} else {
+		fileLetter := string(position.enPassantTarget%16 + 'a')
+		rankNumber := position.enPassantTarget / 16
+		enPassant = fmt.Sprintf("%v%v", fileLetter, rankNumber)
+	}
+
+	return enPassant
+}
+
 func toFEN(position position) string {
 	var pieces string
 	var player string
@@ -210,30 +264,9 @@ func toFEN(position position) string {
 		player = "b"
 	}
 
-	if position.castling[White][KingCastle] {
-		castling += "K"
-	}
-	if position.castling[White][QueenCastle] {
-		castling += "Q"
-	}
-	if position.castling[Black][KingCastle] {
-		castling += "k"
-	}
-	if position.castling[Black][QueenCastle] {
-		castling += "q"
-	}
+	castling = castleString(position)
 
-	if len(castling) == 0 {
-		castling = "-"
-	}
-
-	if position.enPassantTarget == -1 {
-		enPassant = "-"
-	} else {
-		fileLetter := string(position.enPassantTarget%16 + 'a')
-		rankNumber := position.enPassantTarget / 16
-		enPassant = fmt.Sprintf("%v%v", fileLetter, rankNumber)
-	}
+	enPassant = enPassantString(position)
 
 	fen := fmt.Sprintf("%v %v %v %v %v %v", pieces, player, castling, enPassant, position.halfmove, position.fullmove)
 

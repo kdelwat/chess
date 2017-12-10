@@ -50,10 +50,16 @@ func showSliding(position position) {
 func showMove(move move) {
 	var formatString string
 
-	if move&Capture != 0 {
+	if move == KingCastle {
+		formatString = "Castle to the kingside (%v%v)\n"
+	} else if move == QueenCastle {
+		formatString = "Castle to the queenside (%v%v)\n"
+	} else if move&Capture != 0 {
 		formatString = "Capture from %v to %v\n"
 	} else if move&DoublePawnPush != 0 {
 		formatString = "Double pawn push from %v to %v\n"
+	} else if move&Promotion != 0 {
+		formatString = "Promotion from %v to %v\n"
 	} else {
 		formatString = "Quiet move from %v to %v\n"
 	}

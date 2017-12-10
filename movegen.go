@@ -204,6 +204,8 @@ func generateRegularMoves(position position, index int, piece byte) []move {
 				}
 
 				newMove = createCaptureMove(index, newIndex)
+				moves = append(moves, newMove)
+
 				break
 			} else {
 				newMove = createQuietMove(index, newIndex)

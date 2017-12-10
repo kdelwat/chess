@@ -28,6 +28,14 @@ func (m *move) setTo(to byte) {
 	*m = *m | move(to)
 }
 
+func createPromotionCaptureMove(from int, to int, pieceType byte) move {
+	m := createPromotionMove(from, to, pieceType)
+
+	m = m | Capture
+
+	return m
+}
+
 func createPromotionMove(from int, to int, pieceType byte) move {
 	var m move = 0
 
@@ -174,16 +182,38 @@ func generateMoves(position position, color byte) []move {
 					rightAttack = i - 17
 				}
 
-				if isOnBoard(leftAttack) && piecePresent(position, leftAttack) && getColor(position.board[leftAttack]) != color {
-					newMove := createCaptureMove(i, leftAttack)
-					showMove(newMove)
-					moves = append(moves, newMove)
-				}
+				attackIndices := [2]int{leftAttack, rightAttack}
 
-				if isOnBoard(rightAttack) && piecePresent(position, rightAttack) && getColor(position.board[rightAttack]) != color {
-					newMove := createCaptureMove(i, rightAttack)
-					showMove(newMove)
-					moves = append(moves, newMove)
+				for _, attackIndex := range attackIndices {
+					if isOnBoard(attackIndex) && piecePresent(position, attackIndex) && getColor(position.board[attackIndex]) != color {
+
+						// check promo
+						if finalRank(attackIndex, color) {
+							// do promo
+							var newMove move
+
+							newMove = createPromotionCaptureMove(i, newIndex, Knight)
+							showMove(newMove)
+							moves = append(moves, newMove)
+
+							newMove = createPromotionCaptureMove(i, newIndex, Bishop)
+							showMove(newMove)
+							moves = append(moves, newMove)
+
+							newMove = createPromotionCaptureMove(i, newIndex, Rook)
+							showMove(newMove)
+							moves = append(moves, newMove)
+
+							newMove = createPromotionCaptureMove(i, newIndex, Queen)
+							showMove(newMove)
+							moves = append(moves, newMove)
+						} else {
+							newMove := createCaptureMove(i, attackIndex)
+							showMove(newMove)
+							moves = append(moves, newMove)
+						}
+					}
+
 				}
 
 			} else if isSliding(piece) {

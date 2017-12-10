@@ -88,6 +88,162 @@ func createDoublePawnPush(from int, to int) move {
 	return m
 }
 
+func generateCastlingMoves(position position, color byte) []move {
+	var moves []move
+
+	if color == White && position.whiteCanCastleKingside && !piecePresent(position, 5) && !piecePresent(position, 6) {
+		newMove := move(KingCastle)
+		showMove(newMove)
+		moves = append(moves, newMove)
+	} else if color == Black && position.blackCanCastleKingside && !piecePresent(position, 117) && !piecePresent(position, 118) {
+		newMove := move(KingCastle)
+		showMove(newMove)
+		moves = append(moves, newMove)
+	}
+
+	if color == White && position.whiteCanCastleQueenside && !piecePresent(position, 1) && !piecePresent(position, 2) && !piecePresent(position, 3) {
+		newMove := move(QueenCastle)
+		showMove(newMove)
+		moves = append(moves, newMove)
+	} else if color == Black && position.blackCanCastleQueenside && !piecePresent(position, 113) && !piecePresent(position, 114) && !piecePresent(position, 115) {
+		newMove := move(QueenCastle)
+		showMove(newMove)
+		moves = append(moves, newMove)
+	}
+
+	return moves
+}
+
+func generatePawnMoves(position position, color byte, index int) []move {
+	var moves []move
+
+	// try double push
+	if isStartingPawn(index, color) {
+		// do double push
+		var newIndex int
+
+		if color == White {
+			newIndex = index + 32
+		} else {
+			newIndex = index - 32
+		}
+
+		if !piecePresent(position, newIndex) {
+			newMove := createDoublePawnPush(index, newIndex)
+			showMove(newMove)
+			moves = append(moves, newMove)
+		}
+	}
+
+	// try normal move forwards
+	var newIndex int
+
+	if color == White {
+		newIndex = index + 16
+	} else {
+		newIndex = index - 16
+	}
+
+	if !piecePresent(position, newIndex) {
+
+		// check promotions
+		if finalRank(newIndex, color) {
+			// do promo
+			var newMove move
+
+			newMove = createPromotionMove(index, newIndex, Knight)
+			showMove(newMove)
+			moves = append(moves, newMove)
+
+			newMove = createPromotionMove(index, newIndex, Bishop)
+			showMove(newMove)
+			moves = append(moves, newMove)
+
+			newMove = createPromotionMove(index, newIndex, Rook)
+			showMove(newMove)
+			moves = append(moves, newMove)
+
+			newMove = createPromotionMove(index, newIndex, Queen)
+			showMove(newMove)
+			moves = append(moves, newMove)
+
+		} else {
+			newMove := createQuietMove(index, newIndex)
+			showMove(newMove)
+			moves = append(moves, newMove)
+		}
+
+	}
+
+	var leftAttack int
+	var rightAttack int
+
+	var leftEnPassant int
+	var rightEnPassant int
+
+	// try attacks
+
+	if color == White {
+		leftAttack = index + 15
+		rightAttack = index + 17
+	} else {
+		leftAttack = index - 15
+		rightAttack = index - 17
+	}
+
+	leftEnPassant = index - 1
+	rightEnPassant = index + 1
+
+	attackIndices := [2]int{leftAttack, rightAttack}
+
+	for _, attackIndex := range attackIndices {
+
+		var enPassantIndex int
+
+		if attackIndex == leftAttack {
+			enPassantIndex = leftEnPassant
+		} else {
+			enPassantIndex = rightEnPassant
+		}
+
+		if isOnBoard(attackIndex) && piecePresent(position, attackIndex) && getColor(position.board[attackIndex]) != color {
+
+			// check promo
+			if finalRank(attackIndex, color) {
+				// do promo
+				var newMove move
+
+				newMove = createPromotionCaptureMove(index, newIndex, Knight)
+				showMove(newMove)
+				moves = append(moves, newMove)
+
+				newMove = createPromotionCaptureMove(index, newIndex, Bishop)
+				showMove(newMove)
+				moves = append(moves, newMove)
+
+				newMove = createPromotionCaptureMove(index, newIndex, Rook)
+				showMove(newMove)
+				moves = append(moves, newMove)
+
+				newMove = createPromotionCaptureMove(index, newIndex, Queen)
+				showMove(newMove)
+				moves = append(moves, newMove)
+			} else {
+				newMove := createCaptureMove(index, attackIndex)
+				showMove(newMove)
+				moves = append(moves, newMove)
+			}
+		} else if isOnBoard(attackIndex) && piecePresent(position, enPassantIndex) && getColor(position.board[enPassantIndex]) != color && pawnHasDoubledAdvanced(position.board[enPassantIndex]) {
+			newMove := createEnPassantCaptureMove(index, enPassantIndex)
+			showMove(newMove)
+			moves = append(moves, newMove)
+		}
+
+	}
+
+	return moves
+}
+
 func generateMoves(position position, color byte) []move {
 	var moves []move
 
@@ -101,152 +257,11 @@ func generateMoves(position position, color byte) []move {
 
 			// handle castling
 			if isKing(piece) {
-				if color == White && position.whiteCanCastleKingside && !piecePresent(position, 5) && !piecePresent(position, 6) {
-					newMove := move(KingCastle)
-					showMove(newMove)
-					moves = append(moves, newMove)
-				} else if color == Black && position.blackCanCastleKingside && !piecePresent(position, 117) && !piecePresent(position, 118) {
-					newMove := move(KingCastle)
-					showMove(newMove)
-					moves = append(moves, newMove)
-				}
-
-				if color == White && position.whiteCanCastleQueenside && !piecePresent(position, 1) && !piecePresent(position, 2) && !piecePresent(position, 3) {
-					newMove := move(QueenCastle)
-					showMove(newMove)
-					moves = append(moves, newMove)
-				} else if color == Black && position.blackCanCastleQueenside && !piecePresent(position, 113) && !piecePresent(position, 114) && !piecePresent(position, 115) {
-					newMove := move(QueenCastle)
-					showMove(newMove)
-					moves = append(moves, newMove)
-				}
-
+				moves = append(moves, generateCastlingMoves(position, color)...)
 			}
 
 			if isPawn(piece) {
-				// try double push
-				if isStartingPawn(i, color) {
-					// do double push
-					var newIndex int
-
-					if color == White {
-						newIndex = i + 32
-					} else {
-						newIndex = i - 32
-					}
-
-					if !piecePresent(position, newIndex) {
-						newMove := createDoublePawnPush(i, newIndex)
-						showMove(newMove)
-						moves = append(moves, newMove)
-					}
-				}
-
-				// try normal move forwards
-				var newIndex int
-
-				if color == White {
-					newIndex = i + 16
-				} else {
-					newIndex = i - 16
-				}
-
-				if !piecePresent(position, newIndex) {
-
-					// check promotions
-					if finalRank(newIndex, color) {
-						// do promo
-						var newMove move
-
-						newMove = createPromotionMove(i, newIndex, Knight)
-						showMove(newMove)
-						moves = append(moves, newMove)
-
-						newMove = createPromotionMove(i, newIndex, Bishop)
-						showMove(newMove)
-						moves = append(moves, newMove)
-
-						newMove = createPromotionMove(i, newIndex, Rook)
-						showMove(newMove)
-						moves = append(moves, newMove)
-
-						newMove = createPromotionMove(i, newIndex, Queen)
-						showMove(newMove)
-						moves = append(moves, newMove)
-
-					} else {
-						newMove := createQuietMove(i, newIndex)
-						showMove(newMove)
-						moves = append(moves, newMove)
-					}
-
-				}
-
-				var leftAttack int
-				var rightAttack int
-
-				var leftEnPassant int
-				var rightEnPassant int
-
-				// try attacks
-
-				if color == White {
-					leftAttack = i + 15
-					rightAttack = i + 17
-				} else {
-					leftAttack = i - 15
-					rightAttack = i - 17
-				}
-
-				leftEnPassant = i - 1
-				rightEnPassant = i + 1
-
-				attackIndices := [2]int{leftAttack, rightAttack}
-
-				for _, attackIndex := range attackIndices {
-
-					var enPassantIndex int
-
-					if attackIndex == leftAttack {
-						enPassantIndex = leftEnPassant
-					} else {
-						enPassantIndex = rightEnPassant
-					}
-
-					if isOnBoard(attackIndex) && piecePresent(position, attackIndex) && getColor(position.board[attackIndex]) != color {
-
-						// check promo
-						if finalRank(attackIndex, color) {
-							// do promo
-							var newMove move
-
-							newMove = createPromotionCaptureMove(i, newIndex, Knight)
-							showMove(newMove)
-							moves = append(moves, newMove)
-
-							newMove = createPromotionCaptureMove(i, newIndex, Bishop)
-							showMove(newMove)
-							moves = append(moves, newMove)
-
-							newMove = createPromotionCaptureMove(i, newIndex, Rook)
-							showMove(newMove)
-							moves = append(moves, newMove)
-
-							newMove = createPromotionCaptureMove(i, newIndex, Queen)
-							showMove(newMove)
-							moves = append(moves, newMove)
-						} else {
-							newMove := createCaptureMove(i, attackIndex)
-							showMove(newMove)
-							moves = append(moves, newMove)
-						}
-					} else if isOnBoard(attackIndex) && piecePresent(position, enPassantIndex) && getColor(position.board[enPassantIndex]) != color && pawnHasDoubledAdvanced(position.board[enPassantIndex]) {
-						newMove := createEnPassantCaptureMove(i, enPassantIndex)
-						showMove(newMove)
-						moves = append(moves, newMove)
-					}
-
-				}
+				moves = append(moves, generatePawnMoves(position, color, i)...)
 
 			} else if isSliding(piece) {
 				// SLIDING

@@ -30,7 +30,7 @@ const EnPassant = 0x1 << 16
 const KnightPromotion = 0x0
 const BishopPromotion = 0x1 << 16
 const RookPromotion = 0x1 << 17
-const QueenPromotion = 0x2 << 16
+const QueenPromotion = 0x3 << 16
 
 const KingCastle = 0x1 << 17
-const QueenCastle = 0x2 << 16
+const QueenCastle = 0x3 << 16

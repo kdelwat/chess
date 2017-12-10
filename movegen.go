@@ -120,16 +120,18 @@ func generateCastlingMoves(position position) []move {
 func generatePawnMoves(position position, index int) []move {
 	var moves []move
 
+	// to change offset based on playing color
+	var direction int
+	if position.toMove == White {
+		direction = 1
+	} else {
+		direction = -1
+	}
+
 	// try double push
 	if isStartingPawn(index, position.toMove) {
 		// do double push
-		var newIndex int
-
-		if position.toMove == White {
-			newIndex = index + 32
-		} else {
-			newIndex = index - 32
-		}
+		newIndex := index + 32*direction
 
 		if !piecePresent(position, newIndex) {
 			moves = append(moves, createDoublePawnPush(index, newIndex))
@@ -137,16 +139,9 @@ func generatePawnMoves(position position, index int) []move {
 	}
 
 	// try normal move forwards
-	var newIndex int
-
-	if position.toMove == White {
-		newIndex = index + 16
-	} else {
-		newIndex = index - 16
-	}
+	newIndex := index + 16*direction
 
 	if !piecePresent(position, newIndex) {
-
 		// check promotions
 		if finalRank(newIndex, position.toMove) {
 			moves = append(moves, createPromotionMove(index, newIndex, Knight))
@@ -159,24 +154,11 @@ func generatePawnMoves(position position, index int) []move {
 
 	}
 
-	var leftAttack int
-	var rightAttack int
+	leftAttack := index + 15*direction
+	rightAttack := index + 17*direction
 
-	var leftEnPassant int
-	var rightEnPassant int
-
-	// try attacks
-
-	if position.toMove == White {
-		leftAttack = index + 15
-		rightAttack = index + 17
-	} else {
-		leftAttack = index - 15
-		rightAttack = index - 17
-	}
-
-	leftEnPassant = index - 1
-	rightEnPassant = index + 1
+	leftEnPassant := index - 1
+	rightEnPassant := index + 1
 
 	attackIndices := [2]int{leftAttack, rightAttack}
 

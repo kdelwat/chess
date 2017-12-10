@@ -1,8 +1,10 @@
 package main
 
+type castleMap map[byte]map[int]bool
+
 type position struct {
 	board           [128]byte
-	castling        map[byte]map[int]bool
+	castling        castleMap
 	toMove          byte
 	enPassantTarget int
 	halfmove        int

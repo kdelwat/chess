@@ -34,3 +34,5 @@ const QueenPromotion = 0x3 << 16
 
 const KingCastle = 0x1 << 17
 const QueenCastle = 0x3 << 16
+
+const MoveTypeMask = 0xF << 16

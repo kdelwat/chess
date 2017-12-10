@@ -12,6 +12,10 @@ func isPawn(piece byte) bool {
 	return (getPieceType(piece) == Pawn)
 }
 
+func isKing(piece byte) bool {
+	return (getPieceType(piece) == King)
+}
+
 func isPiece(piece byte) bool {
 	if piece&Piece != 0 {
 		return true

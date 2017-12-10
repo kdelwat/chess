@@ -262,7 +262,6 @@ func buildAttackMap(position position, toMove byte) [128]byte {
 	var attackMap [128]byte
 
 	for i := 0; i < BoardSize; i++ {
-
 		piece := position.board[i]
 
 		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == toMove {
@@ -271,7 +270,7 @@ func buildAttackMap(position position, toMove byte) [128]byte {
 			if isPawn(piece) {
 				// to change offset based on playing color
 				var direction int
-				if position.toMove == White {
+				if toMove == White {
 					direction = 1
 				} else {
 					direction = -1

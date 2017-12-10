@@ -10,7 +10,7 @@ func main() {
 	showPosition(startPosition)
 	showSliding(startPosition)
 
-	generateMoves(startPosition, White)
+	generateMoves(startPosition)
 
 	fmt.Printf("FEN: %v\n", toFEN(startPosition))
 }

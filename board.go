@@ -22,3 +22,7 @@ func isOnBoard(index int) bool {
 		return true
 	}
 }
+
+func piecePresent(position position, index int) bool {
+	return isPiece(position.board[index])
+}

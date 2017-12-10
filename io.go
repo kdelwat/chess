@@ -46,3 +46,13 @@ func showSliding(position position) {
 		}
 	}
 }
+
+func showMove(move move) {
+	fmt.Printf("Move from %v to %v\n", move.From(), move.To())
+}
+
+func showMoves(moves []move) {
+	for i := 0; i < len(moves); i++ {
+		showMove(moves[i])
+	}
+}

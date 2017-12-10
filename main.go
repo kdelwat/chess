@@ -10,5 +10,7 @@ func main() {
 	showPosition(startPosition)
 	showSliding(startPosition)
 
-	generateMoves(startPosition)
+	generateMoves(startPosition, White)
+
+	//showMoves(moves)
 }

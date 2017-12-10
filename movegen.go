@@ -20,27 +20,25 @@ func (m move) To() byte {
 	return byte(m & 0xFF)
 }
 
-func (m *move) setFrom(from byte) {
-	*m = *m | (move(from) << 8)
+func createQuietMove(from int, to int) move {
+	var m move
+
+	m = m | move(to)
+	m = m | (move(from) << 8)
+
+	return m
 }
 
-func (m *move) setTo(to byte) {
-	*m = *m | move(to)
-}
+func createCaptureMove(from int, to int) move {
+	m := createQuietMove(from, to)
 
-func createPromotionCaptureMove(from int, to int, pieceType byte) move {
-	m := createPromotionMove(from, to, pieceType)
-
-	m = m | Capture
+	m |= Capture
 
 	return m
 }
 
 func createPromotionMove(from int, to int, pieceType byte) move {
-	var m move = 0
-
-	m = m | move(to)
-	m = m | (move(from) << 8)
+	m := createQuietMove(from, to)
 
 	m = m | Promotion
 
@@ -66,20 +64,9 @@ func createPromotionMove(from int, to int, pieceType byte) move {
 	return m
 }
 
-func createQuietMove(from int, to int) move {
-	var m move = 0
+func createPromotionCaptureMove(from int, to int, pieceType byte) move {
+	m := createPromotionMove(from, to, pieceType)
 
-	m = m | move(to)
-	m = m | (move(from) << 8)
-
-	return m
-}
-
-func createCaptureMove(from int, to int) move {
-	var m move = 0
-
-	m = m | move(to)
-	m = m | (move(from) << 8)
 	m = m | Capture
 
 	return m
@@ -94,10 +81,8 @@ func createEnPassantCaptureMove(from int, to int) move {
 }
 
 func createDoublePawnPush(from int, to int) move {
-	var m move = 0
+	m := createQuietMove(from, to)
 
-	m = m | move(to)
-	m = m | (move(from) << 8)
 	m = m | DoublePawnPush
 
 	return m

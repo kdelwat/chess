@@ -1,6 +1,35 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
+func pieceToString(piece byte) string {
+	var code string
+
+	switch piece & Piece {
+	case King:
+		code = "k"
+	case Queen:
+		code = "q"
+	case Rook:
+		code = "r"
+	case Bishop:
+		code = "b"
+	case Knight:
+		code = "n"
+	case Pawn:
+		code = "p"
+	}
+
+	if getColor(piece) == White {
+		code = strings.ToUpper(code)
+	}
+
+	return code
+}
 
 func showPiece(piece byte) {
 	switch piece & Piece {
@@ -71,4 +100,86 @@ func showMoves(moves []move) {
 	for i := 0; i < len(moves); i++ {
 		showMove(moves[i])
 	}
+}
+
+func toFEN(position position) string {
+	fen := ""
+
+	// piece placement
+
+	for rank := 7; rank >= 0; rank-- {
+		startIndex := rank * 16
+
+		file := 0
+		empty := 0
+
+		for {
+			if file > 7 {
+				if empty != 0 {
+					fen += strconv.FormatInt(int64(empty), 10)
+				}
+				break
+			}
+
+			if !piecePresent(position, startIndex+file) {
+				empty++
+			} else {
+				if empty != 0 {
+					fen += strconv.FormatInt(int64(empty), 10)
+				}
+				empty = 0
+
+				fen += pieceToString(position.board[startIndex+file])
+			}
+
+			file++
+		}
+
+		if rank != 0 {
+			fen += "/"
+		} else {
+			fen += " "
+		}
+
+	}
+
+	if position.toMove == White {
+		fen += "w "
+	} else {
+		fen += "b "
+	}
+
+	if position.blackCanCastleKingside || position.blackCanCastleQueenside || position.whiteCanCastleKingside || position.whiteCanCastleQueenside {
+		if position.whiteCanCastleKingside {
+			fen += "K"
+		}
+		if position.whiteCanCastleQueenside {
+			fen += "Q"
+		}
+		if position.blackCanCastleKingside {
+			fen += "k"
+		}
+		if position.blackCanCastleQueenside {
+			fen += "q"
+		}
+	} else {
+		fen += "-"
+	}
+
+	fen += " "
+
+	if position.enPassantTarget == -1 {
+		fen += "-"
+	} else {
+		fileLetter := string(position.enPassantTarget%16 + 'a')
+		rankNumber := strconv.FormatInt(int64(position.enPassantTarget/16), 10)
+		fen += fileLetter
+		fen += rankNumber
+	}
+	fen += " "
+
+	fen += strconv.FormatInt(int64(position.halfmove), 10)
+	fen += " "
+	fen += strconv.FormatInt(int64(position.fullmove), 10)
+	return fen
 }

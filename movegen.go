@@ -118,29 +118,26 @@ func generateMoves(position position, color byte) []move {
 
 			// handle castling
 			if isKing(piece) {
-				if position.canCastleKingside {
-					if color == White && !piecePresent(position, 5) && !piecePresent(position, 6) {
-						newMove := move(KingCastle)
-						showMove(newMove)
-						moves = append(moves, newMove)
-					} else if color == Black && !piecePresent(position, 117) && !piecePresent(position, 118) {
-						newMove := move(KingCastle)
-						showMove(newMove)
-						moves = append(moves, newMove)
-					}
+				if color == White && position.whiteCanCastleKingside && !piecePresent(position, 5) && !piecePresent(position, 6) {
+					newMove := move(KingCastle)
+					showMove(newMove)
+					moves = append(moves, newMove)
+				} else if color == Black && position.blackCanCastleKingside && !piecePresent(position, 117) && !piecePresent(position, 118) {
+					newMove := move(KingCastle)
+					showMove(newMove)
+					moves = append(moves, newMove)
 				}
 
-				if position.canCastleQueenside {
-					if color == White && !piecePresent(position, 1) && !piecePresent(position, 2) && !piecePresent(position, 3) {
-						newMove := move(QueenCastle)
-						showMove(newMove)
-						moves = append(moves, newMove)
-					} else if color == Black && !piecePresent(position, 113) && !piecePresent(position, 114) && !piecePresent(position, 115) {
-						newMove := move(QueenCastle)
-						showMove(newMove)
-						moves = append(moves, newMove)
-					}
+				if color == White && position.whiteCanCastleQueenside && !piecePresent(position, 1) && !piecePresent(position, 2) && !piecePresent(position, 3) {
+					newMove := move(QueenCastle)
+					showMove(newMove)
+					moves = append(moves, newMove)
+				} else if color == Black && position.blackCanCastleQueenside && !piecePresent(position, 113) && !piecePresent(position, 114) && !piecePresent(position, 115) {
+					newMove := move(QueenCastle)
+					showMove(newMove)
+					moves = append(moves, newMove)
 				}
+
 			}
 
 			if isPawn(piece) {

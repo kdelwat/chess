@@ -112,9 +112,7 @@ func generateMoves(position position, color byte) []move {
 		piece = position.board[i]
 
 		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == color {
-			fmt.Printf("Generating move for piece:")
-			showPiece(position.board[i])
-			fmt.Print("\n")
+			fmt.Printf("Generating move for piece: %v\n", pieceToString(position.board[i]))
 
 			// handle castling
 			if isKing(piece) {

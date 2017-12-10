@@ -22,6 +22,8 @@ func pieceToString(piece byte) string {
 		code = "n"
 	case Pawn:
 		code = "p"
+	default:
+		code = "_"
 	}
 
 	if getColor(piece) == White {
@@ -31,28 +33,10 @@ func pieceToString(piece byte) string {
 	return code
 }
 
-func showPiece(piece byte) {
-	switch piece & Piece {
-	case King:
-		fmt.Print("K")
-	case Queen:
-		fmt.Print("Q")
-	case Rook:
-		fmt.Print("R")
-	case Bishop:
-		fmt.Print("B")
-	case Knight:
-		fmt.Print("H")
-	case Pawn:
-		fmt.Print("P")
-	default:
-		fmt.Print("_")
-	}
-}
 func showPosition(position position) {
 	for i := 0; i < 128; i++ {
 		if i&OffBoard == 0 {
-			showPiece(position.board[i])
+			fmt.Print(pieceToString(position.board[i]))
 		}
 		if (i+1)%16 == 0 {
 			fmt.Print("\n")
@@ -103,83 +87,69 @@ func showMoves(moves []move) {
 }
 
 func toFEN(position position) string {
-	fen := ""
-
-	// piece placement
+	var pieces string
+	var player string
+	var castling string
+	var enPassant string
 
 	for rank := 7; rank >= 0; rank-- {
-		startIndex := rank * 16
-
-		file := 0
 		empty := 0
 
-		for {
-			if file > 7 {
+		for i := rank * 16; i < rank*16+8; i++ {
+			if piecePresent(position, i) {
 				if empty != 0 {
-					fen += strconv.FormatInt(int64(empty), 10)
+					pieces += strconv.FormatInt(int64(empty), 10)
 				}
-				break
-			}
 
-			if !piecePresent(position, startIndex+file) {
-				empty++
-			} else {
-				if empty != 0 {
-					fen += strconv.FormatInt(int64(empty), 10)
-				}
 				empty = 0
 
-				fen += pieceToString(position.board[startIndex+file])
+				pieces += pieceToString(position.board[i])
+			} else {
+				empty++
 			}
+		}
 
-			file++
+		if empty != 0 {
+			pieces += strconv.FormatInt(int64(empty), 10)
 		}
 
 		if rank != 0 {
-			fen += "/"
-		} else {
-			fen += " "
+			pieces += "/"
 		}
-
 	}
 
 	if position.toMove == White {
-		fen += "w "
+		player = "w"
 	} else {
-		fen += "b "
+		player = "b"
 	}
 
-	if position.blackCanCastleKingside || position.blackCanCastleQueenside || position.whiteCanCastleKingside || position.whiteCanCastleQueenside {
-		if position.whiteCanCastleKingside {
-			fen += "K"
-		}
-		if position.whiteCanCastleQueenside {
-			fen += "Q"
-		}
-		if position.blackCanCastleKingside {
-			fen += "k"
-		}
-		if position.blackCanCastleQueenside {
-			fen += "q"
-		}
-	} else {
-		fen += "-"
+	if position.whiteCanCastleKingside {
+		castling += "K"
+	}
+	if position.whiteCanCastleQueenside {
+		castling += "Q"
+	}
+	if position.blackCanCastleKingside {
+		castling += "k"
+	}
+	if position.blackCanCastleQueenside {
+		castling += "q"
 	}
 
-	fen += " "
+	if len(castling) == 0 {
+		castling = "-"
+	}
 
 	if position.enPassantTarget == -1 {
-		fen += "-"
+		enPassant = "-"
 	} else {
 		fileLetter := string(position.enPassantTarget%16 + 'a')
-		rankNumber := strconv.FormatInt(int64(position.enPassantTarget/16), 10)
-		fen += fileLetter
-		fen += rankNumber
+		rankNumber := position.enPassantTarget / 16
+		enPassant = fmt.Sprintf("%v%v", fileLetter, rankNumber)
 	}
-	fen += " "
 
-	fen += strconv.FormatInt(int64(position.halfmove), 10)
-	fen += " "
-	fen += strconv.FormatInt(int64(position.fullmove), 10)
+	fen := fmt.Sprintf("%v %v %v %v %v %v", pieces, player, castling, enPassant, position.halfmove, position.fullmove)
+
 	return fen
 }

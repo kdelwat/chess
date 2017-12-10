@@ -6,6 +6,21 @@ import (
 	"strings"
 )
 
+var fenCodes = map[byte]byte{
+	'k': 67,
+	'q': 71,
+	'b': 68,
+	'n': 66,
+	'r': 69,
+	'p': 65,
+	'K': 3,
+	'Q': 7,
+	'B': 4,
+	'N': 2,
+	'R': 5,
+	'P': 1,
+}
+
 func pieceToString(piece byte) string {
 	var code string
 
@@ -84,6 +99,77 @@ func showMoves(moves []move) {
 	for i := 0; i < len(moves); i++ {
 		showMove(moves[i])
 	}
+}
+
+func fromFen(fen string) position {
+	sections := strings.Split(fen, " ")
+
+	boardString := sections[0]
+	playerString := sections[1]
+	castleString := sections[2]
+	enPassantString := sections[3]
+	halfmoveString := sections[4]
+	fullmoveString := sections[5]
+
+	var startBoard [128]byte
+
+	fmt.Printf("Converting board position: %v\n", boardString)
+	boardIndex := 112
+	for _, char := range boardString {
+		// skip slashes seperating ranks
+		//fmt.Printf("Starting at index %v\n", boardIndex)
+		if char == '/' {
+			//fmt.Print("Skipping /\n")
+			continue
+		}
+
+		if char >= '1' && char <= '8' {
+			//fmt.Printf("Adding %v blank squares\n", char-'0')
+			boardIndex += int(char - '0')
+		} else {
+			//fmt.Printf("Adding piece %v\n", fenCodes[byte(char)])
+			startBoard[boardIndex] = fenCodes[byte(char)]
+			boardIndex++
+		}
+
+		// skip squares not on the board
+		if boardIndex%16 > 7 {
+			boardIndex = ((boardIndex / 16) - 1) * 16
+			//fmt.Printf("Skipping off the board to %v\n", boardIndex)
+		}
+	}
+
+	var toMove byte
+
+	if playerString == "w" {
+		toMove = White
+	} else {
+		toMove = Black
+	}
+
+	var castling = map[byte]map[int]bool{
+		White: map[int]bool{KingCastle: strings.Contains(castleString, "K"), QueenCastle: strings.Contains(castleString, "Q")},
+		Black: map[int]bool{KingCastle: strings.Contains(castleString, "k"), QueenCastle: strings.Contains(castleString, "q")},
+	}
+
+	// en passant squares
+	var enPassantTarget int
+
+	if enPassantString == "-" {
+		enPassantTarget = -1
+	} else {
+		fileLetter := enPassantString[0]
+		rankNumber := int(enPassantString[1] - '0')
+
+		enPassantTarget = (rankNumber * 16) + int(fileLetter-'a')
+	}
+
+	halfmove, _ := strconv.Atoi(halfmoveString)
+	fullmove, _ := strconv.Atoi(fullmoveString)
+
+	startPosition := position{board: startBoard, toMove: toMove, castling: castling, enPassantTarget: enPassantTarget, halfmove: halfmove, fullmove: fullmove}
+
+	return startPosition
 }
 
 func toFEN(position position) string {

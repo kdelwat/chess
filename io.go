@@ -48,7 +48,15 @@ func showSliding(position position) {
 }
 
 func showMove(move move) {
-	fmt.Printf("Move from %v to %v\n", move.From(), move.To())
+	var formatString string
+
+	if move&Capture != 0 {
+		formatString = "Capture from %v to %v"
+	} else {
+		formatString = "Quiet move from %v to %v"
+	}
+
+	fmt.Printf(formatString, move.From(), move.To())
 }
 
 func showMoves(moves []move) {

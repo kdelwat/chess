@@ -133,6 +133,33 @@ func generateMoves(position position, color byte) []move {
 
 			} else if isSliding(piece) {
 				// SLIDING
+				for _, offset := range moveOffsets[getPieceType(piece)] {
+					newIndex := i
+					for {
+						newIndex = i + offset
+
+						// skip if new position is off the board
+						if !isOnBoard(newIndex) {
+							break
+						}
+
+						var newMove move
+						if piecePresent(position, newIndex) {
+							if getColor(position.board[newIndex]) == color {
+								break
+							}
+
+							newMove = createCaptureMove(i, newIndex)
+							break
+						} else {
+							newMove = createQuietMove(i, newIndex)
+						}
+
+						moves = append(moves, newMove)
+						showMove(newMove)
+					}
+				}
+
 			} else {
 				for _, offset := range moveOffsets[getPieceType(piece)] {
 					newIndex := i + offset

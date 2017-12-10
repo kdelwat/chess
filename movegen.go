@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type move uint32
 
 var moveOffsets = map[byte][]int{
@@ -230,7 +228,7 @@ func generateMoves(position position) []move {
 		piece = position.board[i]
 
 		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == position.toMove {
-			fmt.Printf("Generating move for piece: %v\n", pieceToString(position.board[i]))
+			//fmt.Printf("Generating move for piece: %v\n", pieceToString(position.board[i]))
 
 			var pieceMoves []move
 
@@ -246,8 +244,8 @@ func generateMoves(position position) []move {
 				pieceMoves = append(pieceMoves, generateRegularMoves(position, i, piece)...)
 			}
 
-			showMoves(pieceMoves)
-			fmt.Print("\n")
+			//showMoves(pieceMoves)
+			//fmt.Print("\n")
 
 			moves = append(moves, pieceMoves...)
 		}
@@ -265,7 +263,7 @@ func buildAttackMap(position position, toMove byte) [128]byte {
 		piece := position.board[i]
 
 		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == toMove {
-			fmt.Printf("Generating attacks for piece: %v\n", pieceToString(position.board[i]))
+			//fmt.Printf("Generating attacks for piece: %v\n", pieceToString(position.board[i]))
 
 			if isPawn(piece) {
 				// to change offset based on playing color

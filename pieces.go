@@ -43,3 +43,7 @@ func isStartingPawn(index int, color byte) bool {
 
 	return false
 }
+
+func pawnHasDoubledAdvanced(piece byte) bool {
+	return (piece&HasDoubleAdvanced != 0)
+}

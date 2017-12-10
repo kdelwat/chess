@@ -9,6 +9,8 @@ const Knight = 0x02
 const Pawn = 0x01
 const Empty = 0x00
 
+const HasDoubleAdvanced = 0x20
+
 const White = 0x00
 const Black = 0x40
 
@@ -23,6 +25,7 @@ const BoardSize = 128
 const Capture = 0x1 << 18
 const DoublePawnPush = 0x1 << 16
 const Promotion = 0x1 << 19
+const EnPassant = 0x1 << 16
 
 const KnightPromotion = 0x0
 const BishopPromotion = 0x1 << 16

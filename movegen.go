@@ -82,7 +82,13 @@ func createCaptureMove(from int, to int) move {
 	m = m | (move(from) << 8)
 	m = m | Capture
 
-	fmt.Printf("Capture byte is: %b", Capture)
+	return m
+}
+
+func createEnPassantCaptureMove(from int, to int) move {
+	m := createCaptureMove(from, to)
+
+	m = m | EnPassant
 
 	return m
 }
@@ -196,10 +202,13 @@ func generateMoves(position position, color byte) []move {
 
 				}
 
-				// try attacks
-
 				var leftAttack int
 				var rightAttack int
+
+				var leftEnPassant int
+				var rightEnPassant int
+
+				// try attacks
 
 				if color == White {
 					leftAttack = i + 15
@@ -209,9 +218,21 @@ func generateMoves(position position, color byte) []move {
 					rightAttack = i - 17
 				}
 
+				leftEnPassant = i - 1
+				rightEnPassant = i + 1
+
 				attackIndices := [2]int{leftAttack, rightAttack}
 
 				for _, attackIndex := range attackIndices {
+
+					var enPassantIndex int
+
+					if attackIndex == leftAttack {
+						enPassantIndex = leftEnPassant
+					} else {
+						enPassantIndex = rightEnPassant
+					}
+
 					if isOnBoard(attackIndex) && piecePresent(position, attackIndex) && getColor(position.board[attackIndex]) != color {
 
 						// check promo
@@ -239,6 +260,10 @@ func generateMoves(position position, color byte) []move {
 							showMove(newMove)
 							moves = append(moves, newMove)
 						}
+					} else if isOnBoard(attackIndex) && piecePresent(position, enPassantIndex) && getColor(position.board[enPassantIndex]) != color && pawnHasDoubledAdvanced(position.board[enPassantIndex]) {
+						newMove := createEnPassantCaptureMove(i, enPassantIndex)
+						showMove(newMove)
+						moves = append(moves, newMove)
 					}
 
 				}

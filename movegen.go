@@ -92,23 +92,15 @@ func generateCastlingMoves(position position, color byte) []move {
 	var moves []move
 
 	if color == White && position.whiteCanCastleKingside && !piecePresent(position, 5) && !piecePresent(position, 6) {
-		newMove := move(KingCastle)
-		showMove(newMove)
-		moves = append(moves, newMove)
+		moves = append(moves, move(KingCastle))
 	} else if color == Black && position.blackCanCastleKingside && !piecePresent(position, 117) && !piecePresent(position, 118) {
-		newMove := move(KingCastle)
-		showMove(newMove)
-		moves = append(moves, newMove)
+		moves = append(moves, move(KingCastle))
 	}
 
 	if color == White && position.whiteCanCastleQueenside && !piecePresent(position, 1) && !piecePresent(position, 2) && !piecePresent(position, 3) {
-		newMove := move(QueenCastle)
-		showMove(newMove)
-		moves = append(moves, newMove)
+		moves = append(moves, move(QueenCastle))
 	} else if color == Black && position.blackCanCastleQueenside && !piecePresent(position, 113) && !piecePresent(position, 114) && !piecePresent(position, 115) {
-		newMove := move(QueenCastle)
-		showMove(newMove)
-		moves = append(moves, newMove)
+		moves = append(moves, move(QueenCastle))
 	}
 
 	return moves
@@ -129,9 +121,7 @@ func generatePawnMoves(position position, color byte, index int) []move {
 		}
 
 		if !piecePresent(position, newIndex) {
-			newMove := createDoublePawnPush(index, newIndex)
-			showMove(newMove)
-			moves = append(moves, newMove)
+			moves = append(moves, createDoublePawnPush(index, newIndex))
 		}
 	}
 
@@ -148,29 +138,12 @@ func generatePawnMoves(position position, color byte, index int) []move {
 
 		// check promotions
 		if finalRank(newIndex, color) {
-			// do promo
-			var newMove move
-
-			newMove = createPromotionMove(index, newIndex, Knight)
-			showMove(newMove)
-			moves = append(moves, newMove)
-
-			newMove = createPromotionMove(index, newIndex, Bishop)
-			showMove(newMove)
-			moves = append(moves, newMove)
-
-			newMove = createPromotionMove(index, newIndex, Rook)
-			showMove(newMove)
-			moves = append(moves, newMove)
-
-			newMove = createPromotionMove(index, newIndex, Queen)
-			showMove(newMove)
-			moves = append(moves, newMove)
-
+			moves = append(moves, createPromotionMove(index, newIndex, Knight))
+			moves = append(moves, createPromotionMove(index, newIndex, Rook))
+			moves = append(moves, createPromotionMove(index, newIndex, Queen))
+			moves = append(moves, createPromotionMove(index, newIndex, Bishop))
 		} else {
-			newMove := createQuietMove(index, newIndex)
-			showMove(newMove)
-			moves = append(moves, newMove)
+			moves = append(moves, createQuietMove(index, newIndex))
 		}
 
 	}
@@ -210,35 +183,54 @@ func generatePawnMoves(position position, color byte, index int) []move {
 
 			// check promo
 			if finalRank(attackIndex, color) {
-				// do promo
-				var newMove move
-
-				newMove = createPromotionCaptureMove(index, newIndex, Knight)
-				showMove(newMove)
-				moves = append(moves, newMove)
-
-				newMove = createPromotionCaptureMove(index, newIndex, Bishop)
-				showMove(newMove)
-				moves = append(moves, newMove)
-
-				newMove = createPromotionCaptureMove(index, newIndex, Rook)
-				showMove(newMove)
-				moves = append(moves, newMove)
-
-				newMove = createPromotionCaptureMove(index, newIndex, Queen)
-				showMove(newMove)
-				moves = append(moves, newMove)
+				moves = append(moves, createPromotionCaptureMove(index, newIndex, Knight))
+				moves = append(moves, createPromotionCaptureMove(index, newIndex, Bishop))
+				moves = append(moves, createPromotionCaptureMove(index, newIndex, Rook))
+				moves = append(moves, createPromotionCaptureMove(index, newIndex, Queen))
 			} else {
-				newMove := createCaptureMove(index, attackIndex)
-				showMove(newMove)
-				moves = append(moves, newMove)
+				moves = append(moves, createCaptureMove(index, attackIndex))
 			}
 		} else if isOnBoard(attackIndex) && piecePresent(position, enPassantIndex) && getColor(position.board[enPassantIndex]) != color && pawnHasDoubledAdvanced(position.board[enPassantIndex]) {
-			newMove := createEnPassantCaptureMove(index, enPassantIndex)
-			showMove(newMove)
-			moves = append(moves, newMove)
+			moves = append(moves, createEnPassantCaptureMove(index, enPassantIndex))
 		}
 
+	}
+
+	return moves
+}
+
+func generateRegularMoves(position position, color byte, index int, piece byte) []move {
+	var moves []move
+
+	for _, offset := range moveOffsets[getPieceType(piece)] {
+		newIndex := index
+
+		for {
+			newIndex = index + offset
+
+			// skip if new position is off the board
+			if !isOnBoard(newIndex) {
+				break
+			}
+
+			var newMove move
+			if piecePresent(position, newIndex) {
+				if getColor(position.board[newIndex]) == color {
+					break
+				}
+
+				newMove = createCaptureMove(index, newIndex)
+				break
+			} else {
+				newMove = createQuietMove(index, newIndex)
+			}
+
+			moves = append(moves, newMove)
+
+			if !isSliding(piece) {
+				break
+			}
+		}
 	}
 
 	return moves
@@ -255,70 +247,26 @@ func generateMoves(position position, color byte) []move {
 		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == color {
 			fmt.Printf("Generating move for piece: %v\n", pieceToString(position.board[i]))
 
+			var pieceMoves []move
+
 			// handle castling
 			if isKing(piece) {
-				moves = append(moves, generateCastlingMoves(position, color)...)
+				pieceMoves = append(pieceMoves, generateCastlingMoves(position, color)...)
 			}
 
 			if isPawn(piece) {
-				moves = append(moves, generatePawnMoves(position, color, i)...)
-
-			} else if isSliding(piece) {
-				// SLIDING
-				for _, offset := range moveOffsets[getPieceType(piece)] {
-					newIndex := i
-					for {
-						newIndex = i + offset
-
-						// skip if new position is off the board
-						if !isOnBoard(newIndex) {
-							break
-						}
-
-						var newMove move
-						if piecePresent(position, newIndex) {
-							if getColor(position.board[newIndex]) == color {
-								break
-							}
-
-							newMove = createCaptureMove(i, newIndex)
-							break
-						} else {
-							newMove = createQuietMove(i, newIndex)
-						}
-
-						moves = append(moves, newMove)
-						showMove(newMove)
-					}
-				}
+				pieceMoves = append(pieceMoves, generatePawnMoves(position, color, i)...)
 
 			} else {
-				for _, offset := range moveOffsets[getPieceType(piece)] {
-					newIndex := i + offset
-
-					// skip if new position is off the board
-					if !isOnBoard(newIndex) {
-						continue
-					}
-
-					var newMove move
-					if piecePresent(position, newIndex) {
-						if getColor(position.board[newIndex]) == color {
-							continue
-						}
-
-						newMove = createCaptureMove(i, newIndex)
-					} else {
-						newMove = createQuietMove(i, newIndex)
-					}
-
-					moves = append(moves, newMove)
-					showMove(newMove)
-				}
+				pieceMoves = append(pieceMoves, generateRegularMoves(position, color, i, piece)...)
 			}
 
+			showMoves(pieceMoves)
 			fmt.Print("\n")
+
+			moves = append(moves, pieceMoves...)
 		}
+
 	}
 
 	return moves

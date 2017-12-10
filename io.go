@@ -177,7 +177,7 @@ func fromFen(fen string) position {
 		fileLetter := enPassantString[0]
 		rankNumber := int(enPassantString[1] - '0')
 
-		enPassantTarget = (rankNumber * 16) + int(fileLetter-'a')
+		enPassantTarget = ((rankNumber - 1) * 16) + int(fileLetter-'a')
 	}
 
 	halfmove, _ := strconv.Atoi(halfmoveString)
@@ -218,7 +218,7 @@ func enPassantString(position position) string {
 		enPassant = "-"
 	} else {
 		fileLetter := string(position.enPassantTarget%16 + 'a')
-		rankNumber := position.enPassantTarget / 16
+		rankNumber := (position.enPassantTarget / 16) + 1
 		enPassant = fmt.Sprintf("%v%v", fileLetter, rankNumber)
 	}
 

@@ -176,9 +176,8 @@ func generatePawnMoves(position position, index int) []move {
 	}
 
 	// opt target - must be on 4th or 5th rank
-	if isEnPassantTarget(position, index) {
+	if isEnPassantTarget(position, index, direction) {
 		moves = append(moves, createEnPassantCaptureMove(index, position.enPassantTarget))
-
 	}
 
 	return moves

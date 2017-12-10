@@ -11,6 +11,29 @@ func (m move) isQuiet() bool {
 	return (m&MoveTypeMask == 0)
 }
 
+func (m move) isPromotion() bool {
+	return (m&Promotion != 0)
+}
+
+func (m move) getPromotedPiece(piece byte) byte {
+	var promotedPiece byte
+
+	switch m & PromotionTypeMask {
+	case BishopPromotion:
+		promotedPiece |= Bishop
+	case KnightPromotion:
+		promotedPiece |= Knight
+	case QueenPromotion:
+		promotedPiece |= Queen
+	case RookPromotion:
+		promotedPiece |= Rook
+	}
+
+	promotedPiece |= getColor(piece)
+
+	return promotedPiece
+}
+
 func (m move) isCapture() bool {
 	return (m&Capture != 0)
 }
@@ -49,6 +72,15 @@ func makeMove(position *position, move move) moveArtifacts {
 
 		position.board[move.From()] = 0
 		position.board[move.To()] = pieceMoved
+	} else if move.isPromotion() {
+		pieceMoved := position.board[move.From()]
+		promotionPiece := move.getPromotedPiece(pieceMoved)
+
+		position.board[move.From()] = 0
+		position.board[move.To()] = promotionPiece
+
+		// lichess resets the halfmove clock here, but I don't think that's right
+
 	} else if move.isDoublePawnPush() {
 		pieceMoved := position.board[move.From()]
 
@@ -91,6 +123,16 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 
 		position.board[move.To()] = 0
 		position.board[move.From()] = pieceMoved
+	} else if move.isPromotion() {
+		pieceMoved := position.board[move.To()]
+
+		// reacreate pawn
+		var pawn byte
+		pawn |= getColor(pieceMoved)
+		pawn |= Pawn
+
+		position.board[move.From()] = pawn
+		position.board[move.To()] = 0
 	} else if move.isDoublePawnPush() {
 		pieceMoved := position.board[move.To()]
 

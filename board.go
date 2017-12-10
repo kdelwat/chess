@@ -1,7 +1,9 @@
 package main
 
 type position struct {
-	board [128]byte
+	board              [128]byte
+	canCastleKingside  bool
+	canCastleQueenside bool
 }
 
 var startBoard = [128]byte{
@@ -18,9 +20,10 @@ var startBoard = [128]byte{
 func isOnBoard(index int) bool {
 	if index&OffBoard != 0 {
 		return false
-	} else {
-		return true
 	}
+
+	return true
+
 }
 
 func piecePresent(position position, index int) bool {

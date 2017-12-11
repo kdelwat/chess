@@ -15,6 +15,10 @@ func (m move) isPromotion() bool {
 	return (m&Promotion != 0)
 }
 
+func (m move) isPromotionCapture() bool {
+	return m.isPromotion() && (m&Capture != 0)
+}
+
 func (m move) getPromotedPiece(piece byte) byte {
 	var promotedPiece byte
 
@@ -76,6 +80,16 @@ func makeMove(position *position, move move) moveArtifacts {
 
 		position.board[move.From()] = 0
 		position.board[move.To()] = pieceMoved
+	} else if move.isPromotionCapture() {
+		pieceMoved := position.board[move.From()]
+		promotionPiece := move.getPromotedPiece(pieceMoved)
+
+		artifacts.captured = position.board[move.To()]
+
+		position.board[move.From()] = 0
+		position.board[move.To()] = promotionPiece
+
+		position.halfmove = 0
 	} else if move.isPromotion() {
 		pieceMoved := position.board[move.From()]
 		promotionPiece := move.getPromotedPiece(pieceMoved)
@@ -83,7 +97,7 @@ func makeMove(position *position, move move) moveArtifacts {
 		position.board[move.From()] = 0
 		position.board[move.To()] = promotionPiece
 
-		// lichess resets the halfmove clock here, but I don't think that's right
+		position.halfmove = 0
 	} else if move.isEnPassantCapture() {
 		pieceMoved := position.board[move.From()]
 
@@ -157,6 +171,16 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 		}
 
 		position.board[captureIndex] = artifacts.captured
+	} else if move.isPromotionCapture() {
+		pieceMoved := position.board[move.To()]
+
+		// reacreate pawn
+		var pawn byte
+		pawn |= getColor(pieceMoved)
+		pawn |= Pawn
+
+		position.board[move.From()] = pawn
+		position.board[move.To()] = artifacts.captured
 
 	} else if move.isPromotion() {
 		pieceMoved := position.board[move.To()]

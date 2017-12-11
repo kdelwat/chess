@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type move uint32
 
 var moveOffsets = map[byte][]int{
@@ -170,10 +172,10 @@ func generatePawnMoves(position position, index int) []move {
 		if isOnBoard(attackIndex) && piecePresent(position, attackIndex) && getColor(position.board[attackIndex]) != position.toMove {
 			// check promotions
 			if finalRank(attackIndex, position.toMove) {
-				moves = append(moves, createPromotionCaptureMove(index, newIndex, Knight))
-				moves = append(moves, createPromotionCaptureMove(index, newIndex, Bishop))
-				moves = append(moves, createPromotionCaptureMove(index, newIndex, Rook))
-				moves = append(moves, createPromotionCaptureMove(index, newIndex, Queen))
+				moves = append(moves, createPromotionCaptureMove(index, attackIndex, Knight))
+				moves = append(moves, createPromotionCaptureMove(index, attackIndex, Bishop))
+				moves = append(moves, createPromotionCaptureMove(index, attackIndex, Rook))
+				moves = append(moves, createPromotionCaptureMove(index, attackIndex, Queen))
 			} else {
 				moves = append(moves, createCaptureMove(index, attackIndex))
 			}

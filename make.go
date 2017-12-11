@@ -43,6 +43,10 @@ func (m move) isDoublePawnPush() bool {
 	return ((m&MoveTypeMask)>>16 == 1)
 }
 
+func (m move) isEnPassantCapture() bool {
+	return m.isCapture() && (m&EnPassant != 0)
+}
+
 func makeMove(position *position, move move) moveArtifacts {
 	var artifacts = moveArtifacts{
 		halfmove:          position.halfmove,
@@ -80,7 +84,23 @@ func makeMove(position *position, move move) moveArtifacts {
 		position.board[move.To()] = promotionPiece
 
 		// lichess resets the halfmove clock here, but I don't think that's right
+	} else if move.isEnPassantCapture() {
+		pieceMoved := position.board[move.From()]
 
+		position.board[move.From()] = 0
+		position.board[move.To()] = pieceMoved
+
+		var captureIndex int
+		if getColor(pieceMoved) == White {
+			captureIndex = int(move.To()) - 16
+		} else {
+			captureIndex = int(move.To()) + 16
+		}
+
+		artifacts.captured = position.board[captureIndex]
+		position.board[captureIndex] = 0
+
+		position.halfmove = 0
 	} else if move.isDoublePawnPush() {
 		pieceMoved := position.board[move.From()]
 
@@ -123,6 +143,21 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 
 		position.board[move.To()] = 0
 		position.board[move.From()] = pieceMoved
+	} else if move.isEnPassantCapture() {
+		pieceMoved := position.board[move.To()]
+
+		position.board[move.To()] = 0
+		position.board[move.From()] = pieceMoved
+
+		var captureIndex int
+		if getColor(pieceMoved) == White {
+			captureIndex = int(move.To()) - 16
+		} else {
+			captureIndex = int(move.To()) + 16
+		}
+
+		position.board[captureIndex] = artifacts.captured
+
 	} else if move.isPromotion() {
 		pieceMoved := position.board[move.To()]
 

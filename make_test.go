@@ -15,6 +15,7 @@ func TestMakeUnmake(t *testing.T) {
 		{"Capture", "rnbqkb1r/pppp1ppp/5n2/1B2p3/4P3/8/PPPP1PPP/RNBQK1NR b KQkq - 3 3", "rnbqkb1r/pppp1ppp/8/1B2p3/4n3/8/PPPP1PPP/RNBQK1NR w KQkq - 0 4", createCaptureMove(85, 52)},
 		{"Double pawn push", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1", createDoublePawnPush(20, 52)},
 		{"Promotion", "rnbq1bnr/pppBP1p1/6kp/5p2/3Q4/8/PPP2PPP/RNB1K1NR w KQ - 0 9", "rnbqQbnr/pppB2p1/6kp/5p2/3Q4/8/PPP2PPP/RNB1K1NR b KQ - 1 9", createPromotionMove(100, 116, Queen)},
+		{"En passant capture", "rnbqkbnr/pp1p2pp/5p2/2pPp3/4P3/8/PPP2PPP/RNBQKBNR w KQkq c6 0 4", "rnbqkbnr/pp1p2pp/2P2p2/4p3/4P3/8/PPP2PPP/RNBQKBNR b KQkq - 0 4", createEnPassantCaptureMove(67, 82)},
 	}
 
 	for _, test := range cases {

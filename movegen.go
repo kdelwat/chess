@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type move uint32
 
 var moveOffsets = map[byte][]int{
@@ -263,6 +261,21 @@ func generateMoves(position position) []move {
 	}
 
 	return moves
+}
+
+func generateLegalMoves(position position) []move {
+	var legal []move
+	moves := generateMoves(position)
+
+	for _, move := range moves {
+		artifacts := makeMove(&position, move)
+		if !isKingInCheck(position, position.toMove) {
+			legal = append(legal, move)
+		}
+		unmakeMove(&position, move, artifacts)
+	}
+
+	return legal
 }
 
 // doesn't handle en passant because currently only used for checking checks

@@ -142,7 +142,7 @@ func perft(position position, depth int) perftResults {
 	}
 
 	if checked == len(moves) {
-		return perftResults{1, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+		return perftResults{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	}
 
 	return results

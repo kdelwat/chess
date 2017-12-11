@@ -198,6 +198,32 @@ func makeMove(position *position, move move) moveArtifacts {
 		position.board[move.To()] = pieceMoved
 
 		position.halfmove = 0
+
+		// castling
+		if getPieceType(artifacts.captured) == Rook {
+			color := getColor(artifacts.captured)
+
+			if position.castling[color][QueenCastle] == true {
+				if color == White && move.To() == 0 {
+					position.castling[White][QueenCastle] = false
+				}
+				// opt
+				if color == Black && move.To() == 112 {
+					position.castling[Black][QueenCastle] = false
+				}
+			}
+
+			if position.castling[color][KingCastle] == true {
+				if color == White && move.To() == 7 {
+					position.castling[White][KingCastle] = false
+				}
+				// opt
+				if color == Black && move.To() == 119 {
+					position.castling[Black][KingCastle] = false
+				}
+			}
+		}
+
 	}
 
 	if position.toMove == White {

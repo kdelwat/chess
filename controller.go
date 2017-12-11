@@ -10,6 +10,7 @@ import (
 
 type globalData struct {
 	position position
+	bestMove string
 }
 
 type globalOptions struct {
@@ -50,7 +51,6 @@ func startEngine() {
 func handleCommand(command string) {
 	args := strings.Split(strings.TrimSpace(command), " ")
 
-	fmt.Printf("Args: %v\n", args)
 	switch args[0] {
 	case "uci":
 		handleUCI()
@@ -88,6 +88,8 @@ func toggleDebug(setting string) {
 func handleUCI() {
 	sendCommand("id", "name", "Ultimate Engine")
 	sendCommand("id", "author", "Cadel Watson")
+	// can send options here
+	sendCommand("uciok")
 }
 
 func handleNewGame() {
@@ -110,7 +112,7 @@ func sendDebug(message string) {
 func setupPosition(args []string) {
 	var fen string
 
-	if args[0] == "startpos" {
+	if args[1] == "startpos" {
 		fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" //from wikipedia
 	} else {
 		fen = args[0]
@@ -179,11 +181,12 @@ func startAnalysis(args []string) {
 	if argumentPresent("movestogo", args) != -1 {
 		options.movestogo, _ = strconv.Atoi(args[argumentPresent("movestogo", args)+1])
 	}
+
+	engineData.bestMove = getBestMove(engineData.position)
 }
 
 func stopAnalysis() {
-	// impl
-	return
+	sendCommand("bestmove", engineData.bestMove)
 }
 
 func ponderHit() {
@@ -204,3 +207,5 @@ func argumentPresent(arg string, args []string) int {
 
 	return -1
 }
+
+// can add info and options later

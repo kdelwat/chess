@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 type testCase struct {
 	name          string
@@ -39,6 +41,38 @@ func TestCheck(t *testing.T) {
 	}
 }
 
+func TestLegalMoveGen(t *testing.T) {
+	cases := []testCase{
+		// test cases generated from JetChess
+		{"JetChess 1", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", 48},
+		{"JetChess 2", "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1", 14},
+		{"JetChess 3", "n1rb4/1p3p1p/1p6/1R5K/8/p3p1PN/1PP1R3/N6k w - - 0 1", 28},
+		{"JetChess 4", "5RKb/4P1n1/2p4p/3p2p1/3B2Q1/5B2/r6k/4r3 w - - 0 1", 47},
+		{"JetChess 5", "7r/3B4/k7/8/6Qb/8/Kn6/6R1 w - - 0 1", 41},
+		{"JetChess 6", "b1N1rb2/3p4/r6p/2Pp1p1K/3Pk3/2PN1p2/2B2P2/8 w - - 0 1", 17},
+		{"Jetchess 7", "1kN2bb1/4r1r1/Q1P1p3/8/6n1/8/8/2B1K2B w - - 0 1", 34},
+		{"Jetchess 8", "8/8/7K/6p1/NN5k/8/6PP/8 w - - 0 1", 16},
+		{"Jetchess 9", "8/2p5/2Pb4/2pp3R/1ppk1pR1/2n2P1p/1B2PPpP/K7 w - - 0 1", 22},
+		{"Jetchess 10", "8/6pp/8/p5p1/Pp6/1P3p2/pPK4P/krQ4R w - - 0 1", 18},
+	}
+
+	for _, test := range cases {
+		position := fromFen(test.fen)
+
+		moves := generateLegalMoves(position)
+
+		if len(moves) != test.expectedMoves {
+			var formattedMoves []string
+
+			for _, move := range moves {
+				formattedMoves = append(formattedMoves, "("+toAlgebraic(position, move)+" "+toMoveString(move)+")")
+			}
+			t.Errorf("Legal move generation test (%v) failed!\nExpected: %v\nActual: %v\nMoves: %v\n", test.name, test.expectedMoves, len(moves), formattedMoves)
+
+		}
+	}
+
+}
 func TestMoveGen(t *testing.T) {
 	cases := []testCase{
 		{"Starting position", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 20},

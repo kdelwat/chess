@@ -11,11 +11,11 @@ func getBestMove(position position) string {
 
 	moves := generateMoves(position)
 
-	fmt.Printf("Moves: %v\n", moves)
+	//fmt.Printf("Moves: %v\n", moves)
 	move := moves[rand.Intn(len(moves))]
 	alg := toAlgebraic(position, move)
 
-	fmt.Printf("Got best move %v, gives %v\n", move, alg)
+	//fmt.Printf("Got best move %v, gives %v\n", move, alg)
 	return alg
 }
 

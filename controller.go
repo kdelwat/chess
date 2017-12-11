@@ -15,6 +15,7 @@ type globalData struct {
 
 type globalOptions struct {
 	debug bool
+	log   *os.File
 }
 
 type analysisOptions struct {
@@ -40,9 +41,19 @@ var engineOptions = globalOptions{
 func startEngine() {
 	reader := bufio.NewReader(os.Stdin)
 
+	errorLog, err := os.Create("/tmp/cadelChessLog.txt")
+	if err != nil {
+		fmt.Printf("Couldn't create file %v\n", err)
+	}
+
+	engineOptions.log = errorLog
+	defer errorLog.Close()
+
 	input, err := reader.ReadString('\n')
 
 	for err == nil {
+		_, _ = errorLog.WriteString(input)
+		errorLog.Sync()
 		handleCommand(input)
 		input, err = reader.ReadString('\n')
 	}
@@ -102,6 +113,7 @@ func sendCommand(command string, args ...string) {
 
 	outputCommand := strings.Join(tokens, " ")
 
+	_, _ = engineOptions.log.WriteString("> " + outputCommand + "\n")
 	fmt.Println(outputCommand)
 }
 
@@ -115,7 +127,7 @@ func setupPosition(args []string) {
 	if args[1] == "startpos" {
 		fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" //from wikipedia
 	} else {
-		fen = args[0]
+		fen = strings.TrimSpace(strings.Join(args[2:], " "))
 	}
 
 	engineData.position = fromFen(fen)
@@ -183,6 +195,8 @@ func startAnalysis(args []string) {
 	}
 
 	engineData.bestMove = getBestMove(engineData.position)
+	sendCommand("bestmove", engineData.bestMove)
+
 }
 
 func stopAnalysis() {

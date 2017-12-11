@@ -54,6 +54,8 @@ func TestLegalMoveGen(t *testing.T) {
 		{"Jetchess 8", "8/8/7K/6p1/NN5k/8/6PP/8 w - - 0 1", 16},
 		{"Jetchess 9", "8/2p5/2Pb4/2pp3R/1ppk1pR1/2n2P1p/1B2PPpP/K7 w - - 0 1", 22},
 		{"Jetchess 10", "8/6pp/8/p5p1/Pp6/1P3p2/pPK4P/krQ4R w - - 0 1", 18},
+		{"Jetchess 11", "rnbqkbnr/ppp1pppp/8/3p4/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 2", 23},
+		{"Jetchess 12", "rnbqkbnr/ppp1pppp/8/3p4/Q1P5/8/PP1PPPPP/RNB1KBNR b KQkq - 1 2", 6},
 	}
 
 	for _, test := range cases {

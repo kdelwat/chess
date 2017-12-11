@@ -53,6 +53,14 @@ func indexToSquare(index byte) string {
 
 func toAlgebraic(position position, move move) string {
 
+	if move.isKingCastle() {
+		return "0-0"
+	}
+
+	if move.isQueenCastle() {
+		return "0-0-0"
+	}
+
 	if move.isPromotion() || move.isPromotionCapture() {
 		pieceMoved := position.board[move.From()]
 		promotionPiece := move.getPromotedPiece(pieceMoved)
@@ -60,5 +68,95 @@ func toAlgebraic(position position, move move) string {
 		return fmt.Sprintf("%v%v%v", indexToSquare(move.From()), indexToSquare(move.To()), pieceToAlgebraic(promotionPiece))
 	} else {
 		return fmt.Sprintf("%v%v", indexToSquare(move.From()), indexToSquare(move.To()))
+	}
+}
+
+type perftResults struct {
+	nodes           uint64
+	quiet           uint64
+	captures        uint64
+	enpassant       uint64
+	promotion       uint64
+	promoCapture    uint64
+	castleKingSide  uint64
+	castleQueenSide uint64
+	pawnJump        uint64
+	checks          uint64
+}
+
+// Based on C code from https://chessprogramming.wikispaces.com/Perft
+func perft(position position, depth int) perftResults {
+	results := perftResults{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
+	if depth == 0 {
+		return perftResults{1, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	}
+
+	moves := generateMoves(position)
+
+	checked := 0
+
+	for _, move := range moves {
+
+		artifacts := makeMove(&position, move)
+
+		if !isKingInCheck(position, position.toMove) {
+			if move.isQuiet() {
+				results.quiet++
+			} else if move.isQueenCastle() {
+				results.castleQueenSide++
+			} else if move.isKingCastle() {
+				results.castleKingSide++
+			} else if move.isPromotionCapture() {
+				results.promoCapture++
+			} else if move.isPromotion() {
+				results.promotion++
+			} else if move.isEnPassantCapture() {
+				results.enpassant++
+			} else if move.isDoublePawnPush() {
+				results.pawnJump++
+			} else if move.isCapture() {
+				results.captures++
+			}
+
+			if isKingInCheck(position, position.toMove) {
+				results.checks++
+			}
+
+			perftResults := perft(position, depth-1)
+			results.nodes += perftResults.nodes
+			results.quiet += perftResults.quiet
+			results.captures += perftResults.captures
+			results.enpassant += perftResults.enpassant
+			results.promotion += perftResults.promotion
+			results.promoCapture += perftResults.promoCapture
+			results.castleKingSide += perftResults.castleKingSide
+			results.castleQueenSide += perftResults.castleQueenSide
+			results.pawnJump += perftResults.pawnJump
+			results.checks += perftResults.checks
+		} else {
+			checked++
+		}
+
+		unmakeMove(&position, move, artifacts)
+	}
+
+	if checked == len(moves) {
+		return perftResults{1, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	}
+
+	return results
+}
+
+func dividePerft(position position, depth int) {
+	moves := generateMoves(position)
+
+	for _, move := range moves {
+		artifacts := makeMove(&position, move)
+		results := perft(position, depth-1)
+
+		fmt.Printf("%v: %v\n", toAlgebraic(position, move), results.nodes)
+
+		unmakeMove(&position, move, artifacts)
 	}
 }

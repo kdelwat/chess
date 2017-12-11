@@ -3,28 +3,20 @@ package main
 import "fmt"
 
 func main() {
-	//fmt.Printf("Hello, world\n")
-
-	// var castling = map[byte]map[int]bool{
-	// 	White: map[int]bool{KingCastle: true, QueenCastle: true},
-	// 	Black: map[int]bool{KingCastle: true, QueenCastle: true},
-	// }
-
-	//startPosition := position{board: startBoard, toMove: White, castling: castling, enPassantTarget: -1, halfmove: 0, fullmove: 1}
-
 	fmt.Println("Welcome to ultimate engine")
 
-	startEngine()
-	//showPosition(startPosition)
-	//showSliding(startPosition)
-
-	//generateMoves(startPosition)
-
-	//startFen := toFEN(startPosition)
-	//fmt.Printf("FEN: %v\n", toFEN(startPosition))
-	//fmt.Print("FEN gives...\n")
-
-	//anotherPosition := fromFen(startFen)
-	//showPosition(anotherPosition)
-
+	position := fromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	depth := 5
+	results := perft(position, depth)
+	fmt.Printf("Perft with depth=%v\n", depth)
+	fmt.Printf("nodes          : %v\n", results.nodes)
+	fmt.Printf("quiet          : %v\n", results.quiet)
+	fmt.Printf("captures       : %v\n", results.captures)
+	fmt.Printf("enpassant      : %v\n", results.enpassant)
+	fmt.Printf("promotion      : %v\n", results.promotion)
+	fmt.Printf("promoCapture   : %v\n", results.promoCapture)
+	fmt.Printf("castleKingSide : %v\n", results.castleKingSide)
+	fmt.Printf("castleQueenSide: %v\n", results.castleQueenSide)
+	fmt.Printf("pawnJump       : %v\n", results.pawnJump)
+	fmt.Printf("checks         : %v\n", results.checks)
 }

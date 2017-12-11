@@ -19,6 +19,8 @@ func TestMakeUnmake(t *testing.T) {
 		{"Promotion capture", "rnbqkbnr/pP4pp/5p2/3pp3/4P3/8/PPP2PPP/RNBQKBNR w KQkq - 0 6", "rnNqkbnr/p5pp/5p2/3pp3/4P3/8/PPP2PPP/RNBQKBNR b KQkq - 0 6", createPromotionCaptureMove(97, 114, Knight)},
 		{"Losing castle rights from king", "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2", "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 1 2", createQuietMove(4, 20)},
 		{"Losing castle rights from rook", "rnbqkbnr/ppppppp1/7p/8/8/6PP/PPPPPP2/RNBQKBNR b KQkq - 0 2", "rnbqkbn1/pppppppr/7p/8/8/6PP/PPPPPP2/RNBQKBNR w KQq - 1 3", createQuietMove(119, 103)},
+		{"Castle queenside", "rnbqkb1r/ppp1pppp/8/3p2B1/3Pn3/2N5/PPPQPPPP/R3KBNR w KQkq - 2 5", "rnbqkb1r/ppp1pppp/8/3p2B1/3Pn3/2N5/PPPQPPPP/2KR1BNR b kq - 3 5", move(QueenCastle)},
+		{"Castle kingside", "rnbqk2r/ppp2ppp/3bpB2/3p4/3PN3/8/PPPQPPPP/2KR1BNR b kq - 2 7", "rnbq1rk1/ppp2ppp/3bpB2/3p4/3PN3/8/PPPQPPPP/2KR1BNR w - - 3 8", move(KingCastle)},
 	}
 
 	for _, test := range cases {

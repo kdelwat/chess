@@ -42,6 +42,14 @@ func (m move) isCapture() bool {
 	return (m&Capture != 0)
 }
 
+func (m move) isKingCastle() bool {
+	return ((m&MoveTypeMask)>>16 == 2)
+}
+
+func (m move) isQueenCastle() bool {
+	return ((m&MoveTypeMask)>>16 == 3)
+}
+
 func (m move) isDoublePawnPush() bool {
 	//fmt.Printf("Checking double pawn push with move %b, typemask %b")
 	return ((m&MoveTypeMask)>>16 == 1)
@@ -66,6 +74,10 @@ func makeMove(position *position, move move) moveArtifacts {
 	position.enPassantTarget = -1
 
 	// checking castles
+	if move.isKingCastle() || move.isQueenCastle() {
+		position.castling[position.toMove][KingCastle] = false
+		position.castling[position.toMove][QueenCastle] = false
+	}
 	if getPieceType(position.board[move.From()]) == King {
 		position.castling[position.toMove][KingCastle] = false
 		position.castling[position.toMove][QueenCastle] = false
@@ -83,13 +95,6 @@ func makeMove(position *position, move move) moveArtifacts {
 		}
 	}
 
-	if position.toMove == White {
-		position.toMove = Black
-	} else {
-		position.toMove = White
-		position.fullmove++
-	}
-
 	position.halfmove++
 
 	if move.isQuiet() {
@@ -102,6 +107,45 @@ func makeMove(position *position, move move) moveArtifacts {
 
 		position.board[move.From()] = 0
 		position.board[move.To()] = pieceMoved
+	} else if move.isQueenCastle() {
+		if position.toMove == White {
+			king := position.board[4]
+			rook := position.board[0]
+			position.board[4] = 0
+			position.board[0] = 0
+
+			position.board[2] = king
+			position.board[3] = rook
+		} else {
+			king := position.board[116]
+			rook := position.board[112]
+
+			position.board[116] = 0
+			position.board[112] = 0
+
+			position.board[114] = king
+			position.board[115] = rook
+		}
+	} else if move.isKingCastle() {
+		if position.toMove == White {
+			king := position.board[4]
+			rook := position.board[7]
+
+			position.board[4] = 0
+			position.board[7] = 0
+
+			position.board[6] = king
+			position.board[5] = rook
+		} else {
+			king := position.board[116]
+			rook := position.board[119]
+
+			position.board[116] = 0
+			position.board[119] = 0
+
+			position.board[118] = king
+			position.board[117] = rook
+		}
 	} else if move.isPromotionCapture() {
 		pieceMoved := position.board[move.From()]
 		promotionPiece := move.getPromotedPiece(pieceMoved)
@@ -156,6 +200,13 @@ func makeMove(position *position, move move) moveArtifacts {
 		position.halfmove = 0
 	}
 
+	if position.toMove == White {
+		position.toMove = Black
+	} else {
+		position.toMove = White
+		position.fullmove++
+	}
+
 	return artifacts
 }
 
@@ -179,6 +230,46 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 
 		position.board[move.To()] = 0
 		position.board[move.From()] = pieceMoved
+	} else if move.isQueenCastle() {
+		if position.toMove == White {
+			king := position.board[2]
+			rook := position.board[3]
+
+			position.board[2] = 0
+			position.board[3] = 0
+
+			position.board[4] = king
+			position.board[0] = rook
+		} else {
+			king := position.board[114]
+			rook := position.board[115]
+
+			position.board[114] = 0
+			position.board[115] = 0
+
+			position.board[116] = king
+			position.board[112] = rook
+		}
+	} else if move.isKingCastle() {
+		if position.toMove == White {
+			king := position.board[6]
+			rook := position.board[5]
+
+			position.board[6] = 0
+			position.board[5] = 0
+
+			position.board[4] = king
+			position.board[7] = rook
+		} else {
+			king := position.board[118]
+			rook := position.board[117]
+
+			position.board[118] = 0
+			position.board[117] = 0
+
+			position.board[116] = king
+			position.board[119] = rook
+		}
 	} else if move.isEnPassantCapture() {
 		pieceMoved := position.board[move.To()]
 

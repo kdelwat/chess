@@ -92,6 +92,27 @@ func showSliding(position position) {
 	}
 }
 
+func toMoveString(move move) string {
+	if move.isQuiet() {
+		return "Quiet"
+	} else if move.isQueenCastle() {
+		return "Castle queenside"
+	} else if move.isKingCastle() {
+		return "Castle kingside"
+	} else if move.isPromotionCapture() {
+		return "Promotion capture"
+	} else if move.isPromotion() {
+		return "Promotion"
+	} else if move.isEnPassantCapture() {
+		return "En passant capture"
+	} else if move.isDoublePawnPush() {
+		return "Double pawn push"
+	} else if move.isCapture() {
+		return "Capture"
+	}
+	return "Invalid"
+}
+
 func showMove(move move) {
 	var formatString string
 

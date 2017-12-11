@@ -68,6 +68,12 @@ func handleCommand(command string) {
 		setupPosition(args)
 	case "go":
 		startAnalysis(args)
+	case "stop":
+		stopAnalysis()
+	case "ponderhit":
+		ponderHit()
+	case "quit":
+		os.Exit(0)
 	}
 }
 
@@ -173,6 +179,16 @@ func startAnalysis(args []string) {
 	if argumentPresent("movestogo", args) != -1 {
 		options.movestogo, _ = strconv.Atoi(args[argumentPresent("movestogo", args)+1])
 	}
+}
+
+func stopAnalysis() {
+	// impl
+	return
+}
+
+func ponderHit() {
+	// impl
+	return
 }
 
 func isAlgebraic(move string) bool {

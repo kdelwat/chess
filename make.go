@@ -52,14 +52,36 @@ func (m move) isEnPassantCapture() bool {
 }
 
 func makeMove(position *position, move move) moveArtifacts {
+	var castleCopy = castleMap{
+		White: map[int]bool{KingCastle: position.castling[White][KingCastle], QueenCastle: position.castling[White][QueenCastle]},
+		Black: map[int]bool{KingCastle: position.castling[Black][KingCastle], QueenCastle: position.castling[Black][QueenCastle]},
+	}
 	var artifacts = moveArtifacts{
 		halfmove:          position.halfmove,
-		castling:          position.castling,
+		castling:          castleCopy,
 		enPassantPosition: position.enPassantTarget,
 		captured:          0,
 	}
 
 	position.enPassantTarget = -1
+
+	// checking castles
+	if getPieceType(position.board[move.From()]) == King {
+		position.castling[position.toMove][KingCastle] = false
+		position.castling[position.toMove][QueenCastle] = false
+	}
+
+	if getPieceType(position.board[move.From()]) == Rook {
+		if position.toMove == White && move.From() == 0 {
+			position.castling[White][QueenCastle] = false
+		} else if position.toMove == White && move.From() == 7 {
+			position.castling[White][KingCastle] = false
+		} else if position.toMove == Black && move.From() == 112 {
+			position.castling[Black][QueenCastle] = false
+		} else if position.toMove == Black && move.From() == 119 {
+			position.castling[Black][KingCastle] = false
+		}
+	}
 
 	if position.toMove == White {
 		position.toMove = Black

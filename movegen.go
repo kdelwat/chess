@@ -287,7 +287,6 @@ func buildAttackMap(position position, toMove byte) [128]byte {
 		piece := position.board[i]
 
 		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == toMove {
-			//fmt.Printf("Generating attacks for piece: %v\n", pieceToString(position.board[i]))
 
 			if isPawn(piece) {
 				// to change offset based on playing color
@@ -301,8 +300,11 @@ func buildAttackMap(position position, toMove byte) [128]byte {
 				leftAttack := i + 15*direction
 				rightAttack := i + 17*direction
 
-				attackMap[leftAttack] = 1
-				attackMap[rightAttack] = 1
+				if isOnBoard(leftAttack) {
+					attackMap[leftAttack] = 1
+				} else {
+					attackMap[rightAttack] = 1
+				}
 			} else {
 				for _, offset := range moveOffsets[getPieceType(piece)] {
 					newIndex := i

@@ -21,6 +21,8 @@ func TestMakeUnmake(t *testing.T) {
 		{"Losing castle rights from rook", "rnbqkbnr/ppppppp1/7p/8/8/6PP/PPPPPP2/RNBQKBNR b KQkq - 0 2", "rnbqkbn1/pppppppr/7p/8/8/6PP/PPPPPP2/RNBQKBNR w KQq - 1 3", createQuietMove(119, 103)},
 		{"Castle queenside", "rnbqkb1r/ppp1pppp/8/3p2B1/3Pn3/2N5/PPPQPPPP/R3KBNR w KQkq - 2 5", "rnbqkb1r/ppp1pppp/8/3p2B1/3Pn3/2N5/PPPQPPPP/2KR1BNR b kq - 3 5", move(QueenCastle)},
 		{"Castle kingside", "rnbqk2r/ppp2ppp/3bpB2/3p4/3PN3/8/PPPQPPPP/2KR1BNR b kq - 2 7", "rnbq1rk1/ppp2ppp/3bpB2/3p4/3PN3/8/PPPQPPPP/2KR1BNR w - - 3 8", move(KingCastle)},
+
+		{"Buggy case", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q2/PPPBBPpP/2R1K2R b Kkq - 1 2", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q2/PPPBBP1P/2R1K1qR w Kkq - 0 3", createPromotionMove(22, 6, Queen)},
 	}
 
 	for _, test := range cases {

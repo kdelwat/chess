@@ -93,7 +93,15 @@ func createDoublePawnPush(from int, to int) move {
 
 func clearToCastle(position position, side int) bool {
 	for _, index := range castlingBlocks[position.toMove][side] {
-		if piecePresent(position, index) {
+		var attackingColor byte
+		if position.toMove == White {
+			attackingColor = Black
+		} else {
+			attackingColor = White
+		}
+
+		// this is such an easy opt target - just generate the attack map once
+		if piecePresent(position, index) || isAttacked(position, attackingColor, index) {
 			return false
 		}
 	}

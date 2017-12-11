@@ -72,6 +72,8 @@ func TestMoveGen(t *testing.T) {
 		{"Black kingside castle", "r2k4/8/8/8/8/8/8/4K3 b k - 0 1", 15},
 
 		{"Black king", "8/5k2/8/8/8/8/8/1R2K1R1 b - - 0 1", 8},
+
+		{"Can't castle through check", "6q1/8/8/8/8/8/8/4K2R w Kkq - 0 1", 14},
 	}
 
 	for _, test := range cases {

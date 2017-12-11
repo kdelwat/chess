@@ -7,10 +7,15 @@ import (
 	"strings"
 )
 
+type globalData struct {
+	position position
+}
+
 type globalOptions struct {
 	debug bool
 }
 
+var engineData globalData
 var engineOptions = globalOptions{
 	debug: false,
 }
@@ -35,6 +40,16 @@ func handleCommand(command string) {
 		handleUCI()
 	case "debug":
 		toggleDebug(args[1])
+	case "isready":
+		sendCommand("readyok")
+	case "setoption":
+		// TODO
+	case "register":
+		// TODO
+	case "ucinewgame":
+		handleNewGame()
+	case "position":
+		setupPosition(args)
 	}
 }
 
@@ -45,9 +60,15 @@ func toggleDebug(setting string) {
 		engineOptions.debug = false
 	}
 }
+
 func handleUCI() {
 	sendCommand("id", "name", "Ultimate Engine")
 	sendCommand("id", "author", "Cadel Watson")
+}
+
+func handleNewGame() {
+	// do cleanup
+	sendCommand("isready")
 }
 
 func sendCommand(command string, args ...string) {
@@ -60,4 +81,27 @@ func sendCommand(command string, args ...string) {
 
 func sendDebug(message string) {
 	sendCommand("info", message)
+}
+
+func setupPosition(args []string) {
+	var fen string
+
+	if args[0] == "startpos" {
+		fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" //from wikipedia
+	} else {
+		fen = args[0]
+	}
+
+	engineData.position = fromFen(fen)
+
+	if len(args) > 1 {
+		for _, m := range args[:1] {
+			engineData.position = applyMove(engineData.position, m)
+		}
+	}
+}
+
+func applyMove(position position, move string) position {
+	// todo apply algebraic move
+	return position
 }

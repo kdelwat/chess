@@ -282,7 +282,6 @@ func generateLegalMoves(position position) []move {
 // doesn't handle en passant because currently only used for checking checks
 func buildAttackMap(position position, toMove byte) [128]byte {
 	var attackMap [128]byte
-
 	for i := 0; i < BoardSize; i++ {
 		piece := position.board[i]
 
@@ -302,7 +301,8 @@ func buildAttackMap(position position, toMove byte) [128]byte {
 
 				if isOnBoard(leftAttack) {
 					attackMap[leftAttack] = 1
-				} else {
+				}
+				if isOnBoard(rightAttack) {
 					attackMap[rightAttack] = 1
 				}
 			} else {
@@ -338,7 +338,6 @@ func buildAttackMap(position position, toMove byte) [128]byte {
 
 func isAttacked(position position, attackingColor byte, index int) bool {
 	attackMap := buildAttackMap(position, attackingColor)
-
 	return attackMap[index] == 1
 }
 

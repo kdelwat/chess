@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -13,6 +14,21 @@ type globalData struct {
 
 type globalOptions struct {
 	debug bool
+}
+
+type analysisOptions struct {
+	searchMode  string // one of "infinite", "depth", "nodes"
+	searchMoves []string
+	ponder      bool
+	wtime       int
+	btime       int
+	winc        int
+	binc        int
+	movestogo   int
+	depth       int
+	nodes       int
+	movesToMate int
+	movetime    int
 }
 
 var engineData globalData
@@ -50,6 +66,8 @@ func handleCommand(command string) {
 		handleNewGame()
 	case "position":
 		setupPosition(args)
+	case "go":
+		startAnalysis(args)
 	}
 }
 
@@ -104,4 +122,69 @@ func setupPosition(args []string) {
 func applyMove(position position, move string) position {
 	// todo apply algebraic move
 	return position
+}
+
+func startAnalysis(args []string) {
+	var options analysisOptions
+
+	// add ponder but no idea what it means
+
+	if argumentPresent("infinite", args) != -1 {
+		options.searchMode = "infinite"
+	} else if argumentPresent("depth", args) != -1 {
+		options.searchMode = "depth"
+		options.depth, _ = strconv.Atoi(args[argumentPresent("depth", args)+1])
+	} else if argumentPresent("movetime", args) != -1 {
+		options.searchMode = "movetime"
+		options.movetime, _ = strconv.Atoi(args[argumentPresent("depth", args)+1])
+	} else if argumentPresent("nodes", args) != -1 {
+		options.searchMode = "nodes"
+		options.movetime, _ = strconv.Atoi(args[argumentPresent("nodes", args)+1])
+	} else if argumentPresent("mate", args) != -1 {
+		options.searchMode = "mate"
+		options.movesToMate, _ = strconv.Atoi(args[argumentPresent("mate", args)+1])
+
+	}
+
+	if argumentPresent("searchmoves", args) != -1 {
+		var moves []string
+		for i := argumentPresent("searchmoves", args) + 1; isAlgebraic(args[i]); i++ {
+			moves = append(moves, args[i])
+		}
+		options.searchMoves = moves
+	}
+
+	if argumentPresent("wtime", args) != -1 {
+		options.wtime, _ = strconv.Atoi(args[argumentPresent("wtime", args)+1])
+	}
+
+	if argumentPresent("btime", args) != -1 {
+		options.btime, _ = strconv.Atoi(args[argumentPresent("btime", args)+1])
+	}
+
+	if argumentPresent("winc", args) != -1 {
+		options.winc, _ = strconv.Atoi(args[argumentPresent("winc", args)+1])
+	}
+
+	if argumentPresent("binc", args) != -1 {
+		options.binc, _ = strconv.Atoi(args[argumentPresent("binc", args)+1])
+	}
+
+	if argumentPresent("movestogo", args) != -1 {
+		options.movestogo, _ = strconv.Atoi(args[argumentPresent("movestogo", args)+1])
+	}
+}
+
+func isAlgebraic(move string) bool {
+	return true // implement this
+}
+
+func argumentPresent(arg string, args []string) int {
+	for i, a := range args {
+		if arg == a {
+			return i
+		}
+	}
+
+	return -1
 }

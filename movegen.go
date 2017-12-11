@@ -138,8 +138,9 @@ func generatePawnMoves(position position, index int) []move {
 	if isStartingPawn(index, position.toMove) {
 		// do double push
 		newIndex := index + 32*direction
+		jumpIndex := index + 16*direction
 
-		if !piecePresent(position, newIndex) {
+		if !piecePresent(position, jumpIndex) && !piecePresent(position, newIndex) { // reorder for opt?
 			moves = append(moves, createDoublePawnPush(index, newIndex))
 		}
 	}

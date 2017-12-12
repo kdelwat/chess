@@ -150,79 +150,69 @@ func makeMove(position *position, move move) moveArtifacts {
 
 		position.board[kingFinal] = king
 		position.board[rookFinal] = rook
-	} else if move.isPromotionCapture() {
-
-		pieceMoved := position.board[move.From()]
-		promotionPiece := move.getPromotedPiece(pieceMoved)
-
-		artifacts.captured = position.board[move.To()]
-
-		position.board[move.From()] = 0
-		position.board[move.To()] = promotionPiece
-	} else if move.isPromotion() {
-		pieceMoved := position.board[move.From()]
-		promotionPiece := move.getPromotedPiece(pieceMoved)
-
-		position.board[move.From()] = 0
-		position.board[move.To()] = promotionPiece
-
-		position.halfmove = 0
-	} else if move.isEnPassantCapture() {
+	} else {
 		pieceMoved := position.board[move.From()]
 
-		position.board[move.From()] = 0
-		position.board[move.To()] = pieceMoved
+		if move.isPromotionCapture() {
+			promotionPiece := move.getPromotedPiece(pieceMoved)
+			artifacts.captured = position.board[move.To()]
 
-		var captureIndex int
-		if getColor(pieceMoved) == White {
-			captureIndex = int(move.To()) - 16
-		} else {
-			captureIndex = int(move.To()) + 16
-		}
+			position.board[move.From()] = 0
+			position.board[move.To()] = promotionPiece
+		} else if move.isPromotion() {
+			promotionPiece := move.getPromotedPiece(pieceMoved)
 
-		artifacts.captured = position.board[captureIndex]
-		position.board[captureIndex] = 0
-	} else if move.isDoublePawnPush() {
-		pieceMoved := position.board[move.From()]
+			position.board[move.From()] = 0
+			position.board[move.To()] = promotionPiece
 
-		position.board[move.From()] = 0
-		position.board[move.To()] = pieceMoved
+			position.halfmove = 0
+		} else if move.isEnPassantCapture() {
+			position.board[move.From()] = 0
+			position.board[move.To()] = pieceMoved
 
-		position.enPassantTarget = int(move.From()+move.To()) / 2
-		position.halfmove = 0
-	} else if move.isCapture() {
-		// make capture
-		pieceMoved := position.board[move.From()]
-		artifacts.captured = position.board[move.To()]
-
-		position.board[move.From()] = 0
-		position.board[move.To()] = pieceMoved
-
-		// castling
-		if getPieceType(artifacts.captured) == Rook {
-			color := getColor(artifacts.captured)
-
-			if position.castling[color][QueenCastle] == true {
-				if color == White && move.To() == 0 {
-					position.castling[White][QueenCastle] = false
-				}
-				// opt
-				if color == Black && move.To() == 112 {
-					position.castling[Black][QueenCastle] = false
-				}
+			var captureIndex int
+			if getColor(pieceMoved) == White {
+				captureIndex = int(move.To()) - 16
+			} else {
+				captureIndex = int(move.To()) + 16
 			}
 
-			if position.castling[color][KingCastle] == true {
-				if color == White && move.To() == 7 {
-					position.castling[White][KingCastle] = false
-				}
-				// opt
-				if color == Black && move.To() == 119 {
-					position.castling[Black][KingCastle] = false
-				}
+			artifacts.captured = position.board[captureIndex]
+			position.board[captureIndex] = 0
+		} else if move.isDoublePawnPush() {
+			position.board[move.From()] = 0
+			position.board[move.To()] = pieceMoved
+
+			position.enPassantTarget = int(move.From()+move.To()) / 2
+			position.halfmove = 0
+		} else if move.isCapture() {
+			artifacts.captured = position.board[move.To()]
+
+			position.board[move.From()] = 0
+			position.board[move.To()] = pieceMoved
+		}
+
+	}
+
+	// Check if the rook was captured for castling purposes
+	if artifacts.captured != 0 && getPieceType(artifacts.captured) == Rook {
+		color := getColor(artifacts.captured)
+
+		if position.castling[color][QueenCastle] == true {
+			if color == White && move.To() == 0 {
+				position.castling[White][QueenCastle] = false
+			} else if color == Black && move.To() == 112 {
+				position.castling[Black][QueenCastle] = false
 			}
 		}
 
+		if position.castling[color][KingCastle] == true {
+			if color == White && move.To() == 7 {
+				position.castling[White][KingCastle] = false
+			} else if color == Black && move.To() == 119 {
+				position.castling[Black][KingCastle] = false
+			}
+		}
 	}
 
 	if position.toMove == White {

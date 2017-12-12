@@ -92,6 +92,22 @@ func showSliding(position position) {
 	}
 }
 
+func showAttackMap(attackMap [128]byte) {
+	for i := 0; i < 128; i++ {
+		if i&OffBoard == 0 {
+			if attackMap[i] == 1 {
+				fmt.Print("T")
+			} else {
+				fmt.Print("F")
+			}
+		}
+
+		if (i+1)%16 == 0 {
+			fmt.Print("\n")
+		}
+	}
+}
+
 func toMoveString(move move) string {
 	if move.isQuiet() {
 		return "Quiet"

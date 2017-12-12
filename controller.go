@@ -39,15 +39,11 @@ var engineOptions = globalOptions{
 }
 
 func startEngine() {
-	reader := bufio.NewReader(os.Stdin)
+	errorLog := initialiseLog("/tmp/cadelChessLog.txt")
 
-	errorLog, err := os.Create("/tmp/cadelChessLog.txt")
-	if err != nil {
-		fmt.Printf("Couldn't create file %v\n", err)
-	}
-
-	engineOptions.log = errorLog
 	defer errorLog.Close()
+
+	reader := bufio.NewReader(os.Stdin)
 
 	input, err := reader.ReadString('\n')
 
@@ -57,6 +53,30 @@ func startEngine() {
 		handleCommand(input)
 		input, err = reader.ReadString('\n')
 	}
+}
+
+func initialiseLog(filename string) *os.File {
+	errorLog, err := os.Create("/tmp/cadelChessLog.txt")
+	if err != nil {
+		fmt.Printf("Couldn't create file %v\n", err)
+	}
+
+	engineOptions.log = errorLog
+
+	return errorLog
+}
+
+func sendCommand(command string, args ...string) {
+	tokens := append([]string{command}, args...)
+
+	outputCommand := strings.Join(tokens, " ")
+
+	_, _ = engineOptions.log.WriteString("> " + outputCommand + "\n")
+	fmt.Println(outputCommand)
+}
+
+func sendDebug(message string) {
+	sendCommand("info", message)
 }
 
 func handleCommand(command string) {
@@ -97,8 +117,8 @@ func toggleDebug(setting string) {
 }
 
 func handleUCI() {
-	sendCommand("id", "name", "Ultimate Engine")
-	sendCommand("id", "author", "Cadel Watson")
+	sendCommand("id", "name", EngineName)
+	sendCommand("id", "author", EngineAuthor)
 	// can send options here
 	sendCommand("uciok")
 }
@@ -108,24 +128,11 @@ func handleNewGame() {
 	sendCommand("isready")
 }
 
-func sendCommand(command string, args ...string) {
-	tokens := append([]string{command}, args...)
-
-	outputCommand := strings.Join(tokens, " ")
-
-	_, _ = engineOptions.log.WriteString("> " + outputCommand + "\n")
-	fmt.Println(outputCommand)
-}
-
-func sendDebug(message string) {
-	sendCommand("info", message)
-}
-
 func setupPosition(args []string) {
 	var fen string
 
 	if args[1] == "startpos" {
-		fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" //from wikipedia
+		fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	} else {
 		fen = strings.TrimSpace(strings.Join(args[2:], " "))
 	}

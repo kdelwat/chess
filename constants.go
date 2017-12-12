@@ -1,5 +1,8 @@
 package main
 
+const EngineName = "Ultimate Engine"
+const EngineAuthor = "Cadel Watson"
+
 // Piece codes
 const King = 0x03
 const Queen = 0x07

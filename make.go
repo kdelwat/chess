@@ -237,102 +237,79 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 		position.toMove = White
 	}
 
-	position.halfmove = artifacts.halfmove
-
 	if move.isQuiet() {
-		// unmake quiet move
 		pieceMoved := position.board[move.To()]
 
 		position.board[move.To()] = 0
 		position.board[move.From()] = pieceMoved
-	} else if move.isQueenCastle() {
-		if position.toMove == White {
-			king := position.board[2]
-			rook := position.board[3]
+	} else if move.isCastle() {
+		var kingOrigin int
+		var rookOrigin int
+		var kingFinal int
+		var rookFinal int
 
-			position.board[2] = 0
-			position.board[3] = 0
-
-			position.board[4] = king
-			position.board[0] = rook
+		if position.toMove == Black {
+			kingOrigin = 116
 		} else {
-			king := position.board[114]
-			rook := position.board[115]
-
-			position.board[114] = 0
-			position.board[115] = 0
-
-			position.board[116] = king
-			position.board[112] = rook
-		}
-	} else if move.isKingCastle() {
-		if position.toMove == White {
-			king := position.board[6]
-			rook := position.board[5]
-
-			position.board[6] = 0
-			position.board[5] = 0
-
-			position.board[4] = king
-			position.board[7] = rook
-		} else {
-			king := position.board[118]
-			rook := position.board[117]
-
-			position.board[118] = 0
-			position.board[117] = 0
-
-			position.board[116] = king
-			position.board[119] = rook
-		}
-	} else if move.isPromotionCapture() {
-		pieceMoved := position.board[move.To()]
-
-		// reacreate pawn
-		var pawn byte
-		pawn |= getColor(pieceMoved)
-		pawn |= Pawn
-
-		position.board[move.From()] = pawn
-		position.board[move.To()] = artifacts.captured
-
-	} else if move.isPromotion() {
-		pieceMoved := position.board[move.To()]
-
-		// reacreate pawn
-		var pawn byte
-		pawn |= getColor(pieceMoved)
-		pawn |= Pawn
-
-		position.board[move.From()] = pawn
-		position.board[move.To()] = 0
-	} else if move.isEnPassantCapture() {
-		pieceMoved := position.board[move.To()]
-
-		position.board[move.To()] = 0
-		position.board[move.From()] = pieceMoved
-
-		var captureIndex int
-		if getColor(pieceMoved) == White {
-			captureIndex = int(move.To()) - 16
-		} else {
-			captureIndex = int(move.To()) + 16
+			kingOrigin = 4
 		}
 
-		position.board[captureIndex] = artifacts.captured
+		if move.isQueenCastle() {
+			rookOrigin = kingOrigin - 4
+			kingFinal = kingOrigin - 2
+			rookFinal = kingOrigin - 1
+		} else {
+			rookOrigin = kingOrigin + 3
+			kingFinal = kingOrigin + 2
+			rookFinal = kingOrigin + 1
+		}
 
-	} else if move.isDoublePawnPush() {
+		king := position.board[kingFinal]
+		rook := position.board[rookFinal]
+		position.board[kingFinal] = 0
+		position.board[rookFinal] = 0
+
+		position.board[kingOrigin] = king
+		position.board[rookOrigin] = rook
+	} else {
 		pieceMoved := position.board[move.To()]
 
-		position.board[move.To()] = 0
-		position.board[move.From()] = pieceMoved
+		if move.isPromotionCapture() {
+			// recreate pawn
+			var pawn byte
+			pawn |= getColor(pieceMoved)
+			pawn |= Pawn
 
-		position.enPassantTarget = artifacts.enPassantPosition
-	} else if move.isCapture() {
-		// make capture
-		pieceMoved := position.board[move.To()]
+			position.board[move.From()] = pawn
+			position.board[move.To()] = artifacts.captured
+		} else if move.isPromotion() {
+			// recreate pawn
+			var pawn byte
+			pawn |= getColor(pieceMoved)
+			pawn |= Pawn
 
-		position.board[move.From()] = pieceMoved
-		position.board[move.To()] = artifacts.captured
+			position.board[move.From()] = pawn
+			position.board[move.To()] = 0
+		} else if move.isEnPassantCapture() {
+			position.board[move.To()] = 0
+			position.board[move.From()] = pieceMoved
+
+			var captureIndex int
+			if getColor(pieceMoved) == White {
+				captureIndex = int(move.To()) - 16
+			} else {
+				captureIndex = int(move.To()) + 16
+			}
+
+			position.board[captureIndex] = artifacts.captured
+		} else if move.isDoublePawnPush() {
+			position.board[move.To()] = 0
+			position.board[move.From()] = pieceMoved
+
+			position.enPassantTarget = artifacts.enPassantPosition
+		} else if move.isCapture() {
+			position.board[move.From()] = pieceMoved
+			position.board[move.To()] = artifacts.captured
+		}
 	}
 }

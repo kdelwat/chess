@@ -150,6 +150,7 @@ func perft(position position, depth int) perftResults {
 
 func dividePerft(position position, depth int) {
 	moves := generateMoves(position)
+	var total uint64
 
 	for _, move := range moves {
 		artifacts := makeMove(&position, move)
@@ -157,6 +158,10 @@ func dividePerft(position position, depth int) {
 
 		fmt.Printf("%v: %v\n", toAlgebraic(position, move), results.nodes)
 
+		total += results.nodes
+
 		unmakeMove(&position, move, artifacts)
 	}
+
+	fmt.Printf("TOTAL: %v\n", total)
 }

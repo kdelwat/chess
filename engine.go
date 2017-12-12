@@ -149,7 +149,7 @@ func perft(position position, depth int) perftResults {
 }
 
 func dividePerft(position position, depth int) {
-	moves := generateMoves(position)
+	moves := generateLegalMoves(position)
 	var total uint64
 
 	for _, move := range moves {

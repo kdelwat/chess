@@ -112,11 +112,18 @@ func clearToCastle(position position, side int) bool {
 func generateCastlingMoves(position position) []move {
 	var moves []move
 
-	if position.castling[position.toMove][KingCastle] && clearToCastle(position, KingCastle) {
+	var attackingColor byte
+	if position.toMove == White {
+		attackingColor = Black
+	} else {
+		attackingColor = White
+	}
+
+	if position.castling[position.toMove][KingCastle] && clearToCastle(position, KingCastle) && !isKingInCheck(position, attackingColor) {
 		moves = append(moves, move(KingCastle))
 	}
 
-	if position.castling[position.toMove][QueenCastle] && clearToCastle(position, QueenCastle) {
+	if position.castling[position.toMove][QueenCastle] && clearToCastle(position, QueenCastle) && !isKingInCheck(position, attackingColor) {
 		moves = append(moves, move(QueenCastle))
 	}
 

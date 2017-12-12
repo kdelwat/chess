@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type moveArtifacts struct {
 	halfmove          int
 	castling          castleMap
@@ -149,7 +147,6 @@ func makeMove(position *position, move move) moveArtifacts {
 			position.board[117] = rook
 		}
 	} else if move.isPromotionCapture() {
-		fmt.Printf("MAKE: It's a promo cap from %v to %v\n", indexToSquare(move.From()), indexToSquare(move.To()))
 
 		pieceMoved := position.board[move.From()]
 		promotionPiece := move.getPromotedPiece(pieceMoved)
@@ -301,7 +298,6 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 			position.board[119] = rook
 		}
 	} else if move.isPromotionCapture() {
-		fmt.Printf("UNMAKE: It's a promo cap from %v to %v\n", indexToSquare(move.From()), indexToSquare(move.To()))
 		pieceMoved := position.board[move.To()]
 
 		// reacreate pawn

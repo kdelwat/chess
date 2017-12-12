@@ -1,7 +1,5 @@
 package main
 
-type move uint32
-
 var moveOffsets = map[piece][]int{
 	King:   {15, 16, 17, -1, 1, -15, -16, -17},
 	Queen:  {15, 16, 17, -1, 1, -15, -16, -17},
@@ -169,7 +167,7 @@ func generatePawnMoves(position position, index int) []move {
 
 	if !piecePresent(position, newIndex) {
 		// check promotions
-		if finalRank(newIndex, position.toMove) {
+		if isOnFinalRank(newIndex, position.toMove) {
 			moves = append(moves, createPromotionMove(index, newIndex, Knight))
 			moves = append(moves, createPromotionMove(index, newIndex, Rook))
 			moves = append(moves, createPromotionMove(index, newIndex, Queen))
@@ -189,7 +187,7 @@ func generatePawnMoves(position position, index int) []move {
 
 		if isOnBoard(attackIndex) && piecePresent(position, attackIndex) && position.board[attackIndex].color() != position.toMove {
 			// check promotions
-			if finalRank(attackIndex, position.toMove) {
+			if isOnFinalRank(attackIndex, position.toMove) {
 				moves = append(moves, createPromotionCaptureMove(index, attackIndex, Knight))
 				moves = append(moves, createPromotionCaptureMove(index, attackIndex, Bishop))
 				moves = append(moves, createPromotionCaptureMove(index, attackIndex, Rook))

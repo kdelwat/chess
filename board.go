@@ -12,28 +12,31 @@ type position struct {
 }
 
 func isOnBoard(index int) bool {
-	if index&OffBoard != 0 {
-		return false
-	}
-
-	return true
-
+	return index&OffBoard == 0
 }
 
 func piecePresent(position position, index int) bool {
 	return position.board[index].exists()
 }
 
-func finalRank(index int, color byte) bool {
-	if color == White && index >= 112 && index <= 119 {
-		return true
+func isOnRelativeRank(index int, color byte, rank int) bool {
+	var start int
+	if color == White {
+		start = 16 * rank
+	} else {
+		start = 112 - 16*rank
 	}
 
-	if color == Black && index >= 0 && index <= 7 {
-		return true
-	}
+	end := start + 7
+	return (index >= start && index <= end)
+}
 
-	return false
+func isOnFinalRank(index int, color byte) bool {
+	return isOnRelativeRank(index, color, 7)
+}
+
+func isOnStartingRow(index int, color byte) bool {
+	return isOnRelativeRank(index, color, 1)
 }
 
 func isEnPassantTarget(position position, index int, direction int) bool {
@@ -41,16 +44,4 @@ func isEnPassantTarget(position position, index int, direction int) bool {
 	rightTarget := 17 * direction
 
 	return position.enPassantTarget != -1 && (position.enPassantTarget == index+leftTarget || position.enPassantTarget == index+rightTarget)
-}
-
-func isOnStartingRow(index int, color byte) bool {
-	if color == White && index >= 16 && index <= 23 {
-		return true
-	}
-
-	if color == Black && index >= 96 && index <= 103 {
-		return true
-	}
-
-	return false
 }

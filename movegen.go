@@ -298,13 +298,69 @@ func generateLegalMoves(position position) []move {
 	return legal
 }
 
+// created by Jonatan Pettersson
+// https://mediocrechess.blogspot.com.au/2006/12/guide-attacked-squares.html
+var ATTACK_NONE = 0
+var ATTACK_KQR = 1
+var ATTACK_QR = 2
+var ATTACK_KQBwP = 3
+var ATTACK_KQBbP = 4
+var ATTACK_QB = 5
+var ATTACK_N = 6
+
+var attackArray = []int{
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
+	0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0,
+	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0,
+	5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0,
+	2, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 2, 6, 5, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 4, 1, 4, 6, 0, 0, 0, 0, 0,
+	0, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0,
+	0, 0, 6, 3, 1, 3, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6,
+	2, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 2, 0, 0, 5,
+	0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0,
+	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0,
+	0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0,
+	2, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
 // doesn't handle en passant because currently only used for checking checks
-func buildAttackMap(position position, toMove byte) [128]byte {
+func buildAttackMap(position position, toMove byte, index int) [128]byte {
 	var attackMap [128]byte
 	for i := 0; i < BoardSize; i++ {
 		piece := position.board[i]
 
 		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == toMove {
+			canAttack := attackArray[index-i+128]
+
+			switch getPieceType(piece) {
+			case Queen:
+				if canAttack == ATTACK_NONE || canAttack == ATTACK_N {
+					continue
+				}
+			case Bishop:
+				if !(canAttack == ATTACK_KQBbP || canAttack == ATTACK_KQBwP || canAttack == ATTACK_QB) {
+					continue
+				}
+			case Rook:
+				if !(canAttack == ATTACK_KQR || canAttack == ATTACK_QR) {
+					continue
+				}
+			case Knight:
+				if canAttack != ATTACK_N {
+					continue
+				}
+			case Pawn:
+				if !((toMove == White && canAttack == ATTACK_KQBwP) || (toMove == Black && canAttack == ATTACK_KQBbP)) {
+					continue
+				}
+				// 	if !(getColor(piece) == White && canAttack == ATTACK_KQBwP) {
+				// 		continue
+				// 	}
+
+				// 	if !(getColor(piece) == Black && canAttack == ATTACK_KQBbP) {
+				// 		continue
+				// 	}
+			}
 
 			if isPawn(piece) {
 				// to change offset based on playing color
@@ -356,7 +412,7 @@ func buildAttackMap(position position, toMove byte) [128]byte {
 }
 
 func isAttacked(position position, attackingColor byte, index int) bool {
-	attackMap := buildAttackMap(position, attackingColor)
+	attackMap := buildAttackMap(position, attackingColor, index)
 	return attackMap[index] == 1
 }
 

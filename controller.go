@@ -137,7 +137,7 @@ func setupPosition(args []string) {
 		fen = strings.TrimSpace(strings.Join(args[2:], " "))
 	}
 
-	engineData.position = fromFen(fen)
+	engineData.position = fromFEN(fen)
 
 	if len(args) > 1 {
 		for _, m := range args[:1] {

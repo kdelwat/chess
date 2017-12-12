@@ -15,7 +15,7 @@ func TestFEN(t *testing.T) {
 	}
 
 	for _, fen := range cases {
-		convertedPosition := fromFen(fen)
+		convertedPosition := fromFEN(fen)
 		convertedFen := toFEN(convertedPosition)
 
 		if convertedFen != fen {

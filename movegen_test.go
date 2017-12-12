@@ -25,7 +25,7 @@ func TestCheck(t *testing.T) {
 	}
 
 	for _, test := range cases {
-		position := fromFen(test.fen)
+		position := fromFEN(test.fen)
 
 		var attackingColor byte
 		if position.toMove == White {
@@ -63,7 +63,7 @@ func TestLegalMoveGen(t *testing.T) {
 	}
 
 	for _, test := range cases {
-		position := fromFen(test.fen)
+		position := fromFEN(test.fen)
 
 		moves := generateLegalMoves(position)
 
@@ -125,7 +125,7 @@ func TestMoveGen(t *testing.T) {
 	}
 
 	for _, test := range cases {
-		position := fromFen(test.fen)
+		position := fromFEN(test.fen)
 
 		moves := generateMoves(position)
 

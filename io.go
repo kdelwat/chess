@@ -155,7 +155,7 @@ func showMoves(moves []move) {
 	}
 }
 
-func fromFen(fen string) position {
+func fromFEN(fen string) position {
 	sections := strings.Split(fen, " ")
 
 	boardString := sections[0]

@@ -29,7 +29,7 @@ func TestMakeUnmake(t *testing.T) {
 	}
 
 	for _, test := range cases {
-		position := fromFen(test.fen)
+		position := fromFEN(test.fen)
 
 		artifacts := makeMove(&position, test.move)
 

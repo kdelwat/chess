@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -56,6 +57,9 @@ func TestLegalMoveGen(t *testing.T) {
 		{"Jetchess 10", "8/6pp/8/p5p1/Pp6/1P3p2/pPK4P/krQ4R w - - 0 1", 18},
 		{"Jetchess 11", "rnbqkbnr/ppp1pppp/8/3p4/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 2", 23},
 		{"Jetchess 12", "rnbqkbnr/ppp1pppp/8/3p4/Q1P5/8/PP1PPPPP/RNB1KBNR b KQkq - 1 2", 6},
+		{"Checkmate", "rnb1kbnr/pppp1ppp/8/4p3/5PPq/8/PPPPP2P/RNBQKBNR w KQkq - 1 3", 0},
+		{"Check from king", "8/8/8/8/k7/2p5/2KP4/7R b - - 1 2", 5},
+		{"Weird check", "8/8/8/8/k7/8/2Kp4/2R5 b - - 1 3", 12},
 	}
 
 	for _, test := range cases {
@@ -68,6 +72,14 @@ func TestLegalMoveGen(t *testing.T) {
 
 			for _, move := range moves {
 				formattedMoves = append(formattedMoves, "("+toAlgebraic(position, move)+" "+toMoveString(move)+")")
+
+				fmt.Println("(" + toAlgebraic(position, move) + " " + toMoveString(move) + ")")
+
+				fmt.Println(toFEN(position))
+				artifacts := makeMove(&position, move)
+				fmt.Println(toFEN(position))
+				unmakeMove(&position, move, artifacts)
+
 			}
 			t.Errorf("Legal move generation test (%v) failed!\nExpected: %v\nActual: %v\nMoves: %v\n", test.name, test.expectedMoves, len(moves), formattedMoves)
 

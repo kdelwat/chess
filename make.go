@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type moveArtifacts struct {
 	halfmove          int
 	castling          castleMap
@@ -147,6 +149,8 @@ func makeMove(position *position, move move) moveArtifacts {
 			position.board[117] = rook
 		}
 	} else if move.isPromotionCapture() {
+		fmt.Printf("MAKE: It's a promo cap from %v to %v\n", indexToSquare(move.From()), indexToSquare(move.To()))
+
 		pieceMoved := position.board[move.From()]
 		promotionPiece := move.getPromotedPiece(pieceMoved)
 
@@ -296,21 +300,8 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 			position.board[116] = king
 			position.board[119] = rook
 		}
-	} else if move.isEnPassantCapture() {
-		pieceMoved := position.board[move.To()]
-
-		position.board[move.To()] = 0
-		position.board[move.From()] = pieceMoved
-
-		var captureIndex int
-		if getColor(pieceMoved) == White {
-			captureIndex = int(move.To()) - 16
-		} else {
-			captureIndex = int(move.To()) + 16
-		}
-
-		position.board[captureIndex] = artifacts.captured
 	} else if move.isPromotionCapture() {
+		fmt.Printf("UNMAKE: It's a promo cap from %v to %v\n", indexToSquare(move.From()), indexToSquare(move.To()))
 		pieceMoved := position.board[move.To()]
 
 		// reacreate pawn
@@ -331,6 +322,21 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 
 		position.board[move.From()] = pawn
 		position.board[move.To()] = 0
+	} else if move.isEnPassantCapture() {
+		pieceMoved := position.board[move.To()]
+
+		position.board[move.To()] = 0
+		position.board[move.From()] = pieceMoved
+
+		var captureIndex int
+		if getColor(pieceMoved) == White {
+			captureIndex = int(move.To()) - 16
+		} else {
+			captureIndex = int(move.To()) + 16
+		}
+
+		position.board[captureIndex] = artifacts.captured
+
 	} else if move.isDoublePawnPush() {
 		pieceMoved := position.board[move.To()]
 

@@ -2,6 +2,14 @@ package main
 
 type move uint32
 
+func (m move) From() byte {
+	return byte((m & (0xFF << 8)) >> 8)
+}
+
+func (m move) To() byte {
+	return byte(m & 0xFF)
+}
+
 func (m move) isQuiet() bool {
 	return (m&MoveTypeMask == 0)
 }

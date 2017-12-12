@@ -18,13 +18,30 @@ var castlingChecks = map[byte]map[int][]int{
 	Black: map[int][]int{KingCastle: {117, 118}, QueenCastle: {114, 115}},
 }
 
-func (m move) From() byte {
-	return byte((m & (0xFF << 8)) >> 8)
-}
+// Attack map and associated method created by Jonatan Pettersson
+// https://mediocrechess.blogspot.com.au/2006/12/guide-attacked-squares.html
+var attackNone = 0
+var attackKQR = 1
+var attackQR = 2
+var attackKQBwP = 3
+var attackKQBbP = 4
+var attackQB = 5
+var attackN = 6
 
-func (m move) To() byte {
-	return byte(m & 0xFF)
-}
+var attackArray = []int{
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
+	0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0,
+	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0,
+	5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0,
+	2, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 2, 6, 5, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 4, 1, 4, 6, 0, 0, 0, 0, 0,
+	0, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0,
+	0, 0, 6, 3, 1, 3, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6,
+	2, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 2, 0, 0, 5,
+	0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0,
+	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0,
+	0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0,
+	2, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 func createQuietMove(from int, to int) move {
 	var m move
@@ -254,11 +271,8 @@ func generateMoves(position position) []move {
 		piece = position.board[i]
 
 		if isOnBoard(i) && position.board[i].exists() && piece.color() == position.toMove {
-			//fmt.Printf("Generating move for piece: %v\n", pieceToString(position.board[i]))
-
 			var pieceMoves []move
 
-			// handle castling
 			if piece.is(King) {
 				pieceMoves = append(pieceMoves, generateCastlingMoves(position)...)
 			}
@@ -269,9 +283,6 @@ func generateMoves(position position) []move {
 			} else {
 				pieceMoves = append(pieceMoves, generateRegularMoves(position, i, piece)...)
 			}
-
-			//showMoves(pieceMoves)
-			//fmt.Print("\n")
 
 			moves = append(moves, pieceMoves...)
 		}
@@ -296,31 +307,6 @@ func generateLegalMoves(position position) []move {
 	return legal
 }
 
-// created by Jonatan Pettersson
-// https://mediocrechess.blogspot.com.au/2006/12/guide-attacked-squares.html
-var ATTACK_NONE = 0
-var ATTACK_KQR = 1
-var ATTACK_QR = 2
-var ATTACK_KQBwP = 3
-var ATTACK_KQBbP = 4
-var ATTACK_QB = 5
-var ATTACK_N = 6
-
-var attackArray = []int{
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
-	0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0,
-	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0,
-	5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0,
-	2, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 2, 6, 5, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 4, 1, 4, 6, 0, 0, 0, 0, 0,
-	0, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0,
-	0, 0, 6, 3, 1, 3, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6,
-	2, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 2, 0, 0, 5,
-	0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0,
-	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0,
-	0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0,
-	2, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-
 // doesn't handle en passant because currently only used for checking checks
 func buildAttackMap(position position, toMove byte, index int) [128]byte {
 	var attackMap [128]byte
@@ -332,32 +318,25 @@ func buildAttackMap(position position, toMove byte, index int) [128]byte {
 
 			switch piece.identity() {
 			case Queen:
-				if canAttack == ATTACK_NONE || canAttack == ATTACK_N {
+				if canAttack == attackNone || canAttack == attackN {
 					continue
 				}
 			case Bishop:
-				if !(canAttack == ATTACK_KQBbP || canAttack == ATTACK_KQBwP || canAttack == ATTACK_QB) {
+				if !(canAttack == attackKQBbP || canAttack == attackKQBwP || canAttack == attackQB) {
 					continue
 				}
 			case Rook:
-				if !(canAttack == ATTACK_KQR || canAttack == ATTACK_QR) {
+				if !(canAttack == attackKQR || canAttack == attackQR) {
 					continue
 				}
 			case Knight:
-				if canAttack != ATTACK_N {
+				if canAttack != attackN {
 					continue
 				}
 			case Pawn:
-				if !((toMove == White && canAttack == ATTACK_KQBwP) || (toMove == Black && canAttack == ATTACK_KQBbP)) {
+				if !((toMove == White && canAttack == attackKQBwP) || (toMove == Black && canAttack == attackKQBbP)) {
 					continue
 				}
-				// 	if !(getColor(piece) == White && canAttack == ATTACK_KQBwP) {
-				// 		continue
-				// 	}
-
-				// 	if !(getColor(piece) == Black && canAttack == ATTACK_KQBbP) {
-				// 		continue
-				// 	}
 			}
 
 			if piece.is(Pawn) {

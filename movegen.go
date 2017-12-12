@@ -15,6 +15,11 @@ var castlingBlocks = map[byte]map[int][]int{
 	Black: map[int][]int{KingCastle: {117, 118}, QueenCastle: {113, 114, 115}},
 }
 
+var castlingChecks = map[byte]map[int][]int{
+	White: map[int][]int{KingCastle: {5, 6}, QueenCastle: {2, 3}},
+	Black: map[int][]int{KingCastle: {117, 118}, QueenCastle: {114, 115}},
+}
+
 func (m move) From() byte {
 	return byte((m & (0xFF << 8)) >> 8)
 }
@@ -93,6 +98,14 @@ func createDoublePawnPush(from int, to int) move {
 
 func clearToCastle(position position, side int) bool {
 	for _, index := range castlingBlocks[position.toMove][side] {
+
+		// this is such an easy opt target - just generate the attack map once
+		if piecePresent(position, index) {
+			return false
+		}
+	}
+
+	for _, index := range castlingChecks[position.toMove][side] {
 		var attackingColor byte
 		if position.toMove == White {
 			attackingColor = Black
@@ -100,8 +113,7 @@ func clearToCastle(position position, side int) bool {
 			attackingColor = White
 		}
 
-		// this is such an easy opt target - just generate the attack map once
-		if piecePresent(position, index) || isAttacked(position, attackingColor, index) {
+		if isAttacked(position, attackingColor, index) {
 			return false
 		}
 	}

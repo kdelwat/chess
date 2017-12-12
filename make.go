@@ -42,6 +42,10 @@ func (m move) isCapture() bool {
 	return (m&Capture != 0)
 }
 
+func (m move) isCastle() bool {
+	return m.isKingCastle() || m.isQueenCastle()
+}
+
 func (m move) isKingCastle() bool {
 	return ((m&MoveTypeMask)>>16 == 2)
 }
@@ -59,11 +63,21 @@ func (m move) isEnPassantCapture() bool {
 	return m.isCapture() && (m&EnPassant != 0)
 }
 
+func makeQuietMove(position *position, from byte, to byte) {
+	pieceMoved := position.board[from]
+
+	position.board[from] = 0
+	position.board[to] = pieceMoved
+}
+
 func makeMove(position *position, move move) moveArtifacts {
 	var castleCopy = castleMap{
-		White: map[int]bool{KingCastle: position.castling[White][KingCastle], QueenCastle: position.castling[White][QueenCastle]},
-		Black: map[int]bool{KingCastle: position.castling[Black][KingCastle], QueenCastle: position.castling[Black][QueenCastle]},
+		White: map[int]bool{KingCastle: position.castling[White][KingCastle],
+			QueenCastle: position.castling[White][QueenCastle]},
+		Black: map[int]bool{KingCastle: position.castling[Black][KingCastle],
+			QueenCastle: position.castling[Black][QueenCastle]},
 	}
+
 	var artifacts = moveArtifacts{
 		halfmove:          position.halfmove,
 		castling:          castleCopy,
@@ -73,11 +87,13 @@ func makeMove(position *position, move move) moveArtifacts {
 
 	position.enPassantTarget = -1
 
-	// checking castles
-	if move.isKingCastle() || move.isQueenCastle() {
-		position.castling[position.toMove][KingCastle] = false
-		position.castling[position.toMove][QueenCastle] = false
+	if move&Capture != 0 {
+		position.halfmove = 0
+	} else {
+		position.halfmove++
 	}
+
+	// If the king or rook are moving, remove castle rights
 	if getPieceType(position.board[move.From()]) == King {
 		position.castling[position.toMove][KingCastle] = false
 		position.castling[position.toMove][QueenCastle] = false
@@ -95,57 +111,45 @@ func makeMove(position *position, move move) moveArtifacts {
 		}
 	}
 
-	position.halfmove++
-
 	if move.isQuiet() {
-		// make quiet move
-		pieceMoved := position.board[move.From()]
+		makeQuietMove(position, move.From(), move.To())
 
-		if isPawn(pieceMoved) {
+		if isPawn(position.board[move.From()]) {
 			position.halfmove = 0
 		}
 
-		position.board[move.From()] = 0
-		position.board[move.To()] = pieceMoved
-	} else if move.isQueenCastle() {
-		if position.toMove == White {
-			king := position.board[4]
-			rook := position.board[0]
-			position.board[4] = 0
-			position.board[0] = 0
+	} else if move.isCastle() {
+		position.castling[position.toMove][KingCastle] = false
+		position.castling[position.toMove][QueenCastle] = false
 
-			position.board[2] = king
-			position.board[3] = rook
+		var kingOrigin int
+		var rookOrigin int
+		var kingFinal int
+		var rookFinal int
+
+		if position.toMove == Black {
+			kingOrigin = 116
 		} else {
-			king := position.board[116]
-			rook := position.board[112]
-
-			position.board[116] = 0
-			position.board[112] = 0
-
-			position.board[114] = king
-			position.board[115] = rook
+			kingOrigin = 4
 		}
-	} else if move.isKingCastle() {
-		if position.toMove == White {
-			king := position.board[4]
-			rook := position.board[7]
 
-			position.board[4] = 0
-			position.board[7] = 0
-
-			position.board[6] = king
-			position.board[5] = rook
+		if move.isQueenCastle() {
+			rookOrigin = kingOrigin - 4
+			kingFinal = kingOrigin - 2
+			rookFinal = kingOrigin - 1
 		} else {
-			king := position.board[116]
-			rook := position.board[119]
-
-			position.board[116] = 0
-			position.board[119] = 0
-
-			position.board[118] = king
-			position.board[117] = rook
+			rookOrigin = kingOrigin + 3
+			kingFinal = kingOrigin + 2
+			rookFinal = kingOrigin + 1
 		}
+
+		king := position.board[kingOrigin]
+		rook := position.board[rookOrigin]
+		position.board[kingOrigin] = 0
+		position.board[rookOrigin] = 0
+
+		position.board[kingFinal] = king
+		position.board[rookFinal] = rook
 	} else if move.isPromotionCapture() {
 
 		pieceMoved := position.board[move.From()]
@@ -155,8 +159,6 @@ func makeMove(position *position, move move) moveArtifacts {
 
 		position.board[move.From()] = 0
 		position.board[move.To()] = promotionPiece
-
-		position.halfmove = 0
 	} else if move.isPromotion() {
 		pieceMoved := position.board[move.From()]
 		promotionPiece := move.getPromotedPiece(pieceMoved)
@@ -180,8 +182,6 @@ func makeMove(position *position, move move) moveArtifacts {
 
 		artifacts.captured = position.board[captureIndex]
 		position.board[captureIndex] = 0
-
-		position.halfmove = 0
 	} else if move.isDoublePawnPush() {
 		pieceMoved := position.board[move.From()]
 
@@ -197,8 +197,6 @@ func makeMove(position *position, move move) moveArtifacts {
 
 		position.board[move.From()] = 0
 		position.board[move.To()] = pieceMoved
-
-		position.halfmove = 0
 
 		// castling
 		if getPieceType(artifacts.captured) == Rook {

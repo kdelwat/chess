@@ -2,7 +2,7 @@ package main
 
 type move uint32
 
-var moveOffsets = map[byte][]int{
+var moveOffsets = map[piece][]int{
 	King:   {15, 16, 17, -1, 1, -15, -16, -17},
 	Queen:  {15, 16, 17, -1, 1, -15, -16, -17},
 	Bishop: {15, 17, -15, -17},
@@ -154,7 +154,7 @@ func generatePawnMoves(position position, index int) []move {
 	}
 
 	// try double push
-	if isStartingPawn(index, position.toMove) {
+	if isOnStartingRow(index, position.toMove) {
 		// do double push
 		newIndex := index + 32*direction
 		jumpIndex := index + 16*direction
@@ -187,7 +187,7 @@ func generatePawnMoves(position position, index int) []move {
 
 	for _, attackIndex := range attackIndices {
 
-		if isOnBoard(attackIndex) && piecePresent(position, attackIndex) && getColor(position.board[attackIndex]) != position.toMove {
+		if isOnBoard(attackIndex) && piecePresent(position, attackIndex) && position.board[attackIndex].color() != position.toMove {
 			// check promotions
 			if finalRank(attackIndex, position.toMove) {
 				moves = append(moves, createPromotionCaptureMove(index, attackIndex, Knight))
@@ -209,10 +209,10 @@ func generatePawnMoves(position position, index int) []move {
 	return moves
 }
 
-func generateRegularMoves(position position, index int, piece byte) []move {
+func generateRegularMoves(position position, index int, piece piece) []move {
 	var moves []move
 
-	for _, offset := range moveOffsets[getPieceType(piece)] {
+	for _, offset := range moveOffsets[piece.identity()] {
 		newIndex := index
 
 		for {
@@ -224,7 +224,7 @@ func generateRegularMoves(position position, index int, piece byte) []move {
 
 			var newMove move
 			if piecePresent(position, newIndex) {
-				if getColor(position.board[newIndex]) == position.toMove {
+				if position.board[newIndex].color() == position.toMove {
 					break
 				}
 
@@ -238,7 +238,7 @@ func generateRegularMoves(position position, index int, piece byte) []move {
 
 			moves = append(moves, newMove)
 
-			if !isSliding(piece) {
+			if !piece.isSliding() {
 				break
 			}
 		}
@@ -250,22 +250,22 @@ func generateRegularMoves(position position, index int, piece byte) []move {
 func generateMoves(position position) []move {
 	var moves []move
 
-	var piece byte
+	var piece piece
 	for i := 0; i < BoardSize; i++ {
 
 		piece = position.board[i]
 
-		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == position.toMove {
+		if isOnBoard(i) && position.board[i].exists() && piece.color() == position.toMove {
 			//fmt.Printf("Generating move for piece: %v\n", pieceToString(position.board[i]))
 
 			var pieceMoves []move
 
 			// handle castling
-			if isKing(piece) {
+			if piece.is(King) {
 				pieceMoves = append(pieceMoves, generateCastlingMoves(position)...)
 			}
 
-			if isPawn(piece) {
+			if piece.is(Pawn) {
 				pieceMoves = append(pieceMoves, generatePawnMoves(position, i)...)
 
 			} else {
@@ -329,10 +329,10 @@ func buildAttackMap(position position, toMove byte, index int) [128]byte {
 	for i := 0; i < BoardSize; i++ {
 		piece := position.board[i]
 
-		if isOnBoard(i) && isPiece(position.board[i]) && getColor(piece) == toMove {
+		if isOnBoard(i) && position.board[i].exists() && piece.color() == toMove {
 			canAttack := attackArray[index-i+128]
 
-			switch getPieceType(piece) {
+			switch piece.identity() {
 			case Queen:
 				if canAttack == ATTACK_NONE || canAttack == ATTACK_N {
 					continue
@@ -362,7 +362,7 @@ func buildAttackMap(position position, toMove byte, index int) [128]byte {
 				// 	}
 			}
 
-			if isPawn(piece) {
+			if piece.is(Pawn) {
 				// to change offset based on playing color
 				var direction int
 				if toMove == White {
@@ -381,7 +381,7 @@ func buildAttackMap(position position, toMove byte, index int) [128]byte {
 					attackMap[rightAttack] = 1
 				}
 			} else {
-				for _, offset := range moveOffsets[getPieceType(piece)] {
+				for _, offset := range moveOffsets[piece.identity()] {
 					newIndex := i
 
 					for {
@@ -397,7 +397,7 @@ func buildAttackMap(position position, toMove byte, index int) [128]byte {
 							break
 						}
 
-						if !isSliding(piece) {
+						if !piece.isSliding() {
 							break
 						}
 					}
@@ -423,7 +423,7 @@ func isKingInCheck(position position, attackingColor byte) bool {
 	for i := 0; i < BoardSize; i++ {
 		piece := position.board[i]
 
-		if isOnBoard(i) && isPiece(piece) && getPieceType(piece) == King && getColor(piece) != attackingColor {
+		if isOnBoard(i) && piece.exists() && piece.is(King) && piece.color() != attackingColor {
 			kingIndex = i
 			break
 		}

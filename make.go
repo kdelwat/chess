@@ -4,7 +4,7 @@ type moveArtifacts struct {
 	halfmove          int
 	castling          castleMap
 	enPassantPosition int
-	captured          byte
+	captured          piece
 }
 
 func (m move) isQuiet() bool {
@@ -19,8 +19,8 @@ func (m move) isPromotionCapture() bool {
 	return m.isPromotion() && (m&Capture != 0)
 }
 
-func (m move) getPromotedPiece(piece byte) byte {
-	var promotedPiece byte
+func (m move) getPromotedPiece(p piece) piece {
+	var promotedPiece piece
 
 	switch m & PromotionTypeMask {
 	case BishopPromotion:
@@ -33,7 +33,7 @@ func (m move) getPromotedPiece(piece byte) byte {
 		promotedPiece |= Rook
 	}
 
-	promotedPiece |= getColor(piece)
+	promotedPiece |= piece(p.color())
 
 	return promotedPiece
 }
@@ -94,12 +94,12 @@ func makeMove(position *position, move move) moveArtifacts {
 	}
 
 	// If the king or rook are moving, remove castle rights
-	if getPieceType(position.board[move.From()]) == King {
+	if position.board[move.From()].is(King) {
 		position.castling[position.toMove][KingCastle] = false
 		position.castling[position.toMove][QueenCastle] = false
 	}
 
-	if getPieceType(position.board[move.From()]) == Rook {
+	if position.board[move.From()].is(Rook) {
 		if position.toMove == White && move.From() == 0 {
 			position.castling[White][QueenCastle] = false
 		} else if position.toMove == White && move.From() == 7 {
@@ -114,7 +114,7 @@ func makeMove(position *position, move move) moveArtifacts {
 	if move.isQuiet() {
 		makeQuietMove(position, move.From(), move.To())
 
-		if isPawn(position.board[move.From()]) {
+		if position.board[move.From()].is(Pawn) {
 			position.halfmove = 0
 		}
 
@@ -171,7 +171,7 @@ func makeMove(position *position, move move) moveArtifacts {
 			position.board[move.To()] = pieceMoved
 
 			var captureIndex int
-			if getColor(pieceMoved) == White {
+			if pieceMoved.color() == White {
 				captureIndex = int(move.To()) - 16
 			} else {
 				captureIndex = int(move.To()) + 16
@@ -195,8 +195,8 @@ func makeMove(position *position, move move) moveArtifacts {
 	}
 
 	// Check if the rook was captured for castling purposes
-	if artifacts.captured != 0 && getPieceType(artifacts.captured) == Rook {
-		color := getColor(artifacts.captured)
+	if artifacts.captured != 0 && artifacts.captured.is(Rook) {
+		color := artifacts.captured.color()
 
 		if position.castling[color][QueenCastle] == true {
 			if color == White && move.To() == 0 {
@@ -276,16 +276,16 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 
 		if move.isPromotionCapture() {
 			// recreate pawn
-			var pawn byte
-			pawn |= getColor(pieceMoved)
+			var pawn piece
+			pawn |= piece(pieceMoved.color())
 			pawn |= Pawn
 
 			position.board[move.From()] = pawn
 			position.board[move.To()] = artifacts.captured
 		} else if move.isPromotion() {
 			// recreate pawn
-			var pawn byte
-			pawn |= getColor(pieceMoved)
+			var pawn piece
+			pawn |= piece(pieceMoved.color())
 			pawn |= Pawn
 
 			position.board[move.From()] = pawn
@@ -295,7 +295,7 @@ func unmakeMove(position *position, move move, artifacts moveArtifacts) {
 			position.board[move.From()] = pieceMoved
 
 			var captureIndex int
-			if getColor(pieceMoved) == White {
+			if pieceMoved.color() == White {
 				captureIndex = int(move.To()) - 16
 			} else {
 				captureIndex = int(move.To()) + 16

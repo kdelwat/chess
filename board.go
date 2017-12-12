@@ -3,23 +3,12 @@ package main
 type castleMap map[byte]map[int]bool
 
 type position struct {
-	board           [128]byte
+	board           [128]piece
 	castling        castleMap
 	toMove          byte
 	enPassantTarget int
 	halfmove        int
 	fullmove        int
-}
-
-var startBoard = [128]byte{
-	5, 2, 4, 7, 3, 4, 2, 5, 0, 0, 0, 0, 0, 0, 0, 0,
-	1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	65, 65, 65, 65, 65, 65, 65, 65, 0, 0, 0, 0, 0, 0, 0, 0,
-	69, 66, 68, 71, 67, 68, 66, 69, 0, 0, 0, 0, 0, 0, 0, 0,
 }
 
 func isOnBoard(index int) bool {
@@ -32,7 +21,7 @@ func isOnBoard(index int) bool {
 }
 
 func piecePresent(position position, index int) bool {
-	return isPiece(position.board[index])
+	return position.board[index].exists()
 }
 
 func finalRank(index int, color byte) bool {
@@ -52,4 +41,16 @@ func isEnPassantTarget(position position, index int, direction int) bool {
 	rightTarget := 17 * direction
 
 	return position.enPassantTarget != -1 && (position.enPassantTarget == index+leftTarget || position.enPassantTarget == index+rightTarget)
+}
+
+func isOnStartingRow(index int, color byte) bool {
+	if color == White && index >= 16 && index <= 23 {
+		return true
+	}
+
+	if color == Black && index >= 96 && index <= 103 {
+		return true
+	}
+
+	return false
 }

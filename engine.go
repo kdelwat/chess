@@ -19,10 +19,10 @@ func getBestMove(position position) string {
 	return alg
 }
 
-func pieceToAlgebraic(piece byte) string {
+func pieceToAlgebraic(p piece) string {
 	var code string
 
-	switch piece & Piece {
+	switch p & Piece {
 	case King:
 		code = "k"
 	case Queen:

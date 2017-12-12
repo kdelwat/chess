@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var fenCodes = map[byte]byte{
+var fenCodes = map[byte]piece{
 	'k': 67,
 	'q': 71,
 	'b': 68,
@@ -21,10 +21,10 @@ var fenCodes = map[byte]byte{
 	'P': 1,
 }
 
-func pieceToString(piece byte) string {
+func pieceToString(p piece) string {
 	var code string
 
-	switch piece & Piece {
+	switch p & Piece {
 	case King:
 		code = "k"
 	case Queen:
@@ -41,7 +41,7 @@ func pieceToString(piece byte) string {
 		code = "_"
 	}
 
-	if getColor(piece) == White {
+	if p.color() == White {
 		code = strings.ToUpper(code)
 	}
 
@@ -79,7 +79,7 @@ func showPosition(position position) {
 func showSliding(position position) {
 	for i := 0; i < 128; i++ {
 		if i&OffBoard == 0 {
-			if isSliding(position.board[i]) {
+			if position.board[i].isSliding() {
 				fmt.Print("T")
 			} else {
 				fmt.Print("F")
@@ -165,7 +165,7 @@ func fromFen(fen string) position {
 	halfmoveString := sections[4]
 	fullmoveString := sections[5]
 
-	var startBoard [128]byte
+	var startBoard [128]piece
 
 	boardIndex := 112
 	for _, char := range boardString {

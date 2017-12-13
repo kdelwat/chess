@@ -207,18 +207,19 @@ func fromFEN(fen string) position {
 	castling = setCastle(castling, QueenCastle, Black, strings.Contains(castleString, "q"))
 
 	// en passant squares
-	var enPassantTarget int
+	var enPassantTarget byte
 
 	if enPassantString == "-" {
-		enPassantTarget = -1
+		enPassantTarget = NoEnPassant
 	} else {
 		fileLetter := enPassantString[0]
 		rankNumber := int(enPassantString[1] - '0')
 
-		enPassantTarget = ((rankNumber - 1) * 16) + int(fileLetter-'a')
+		enPassantTarget = byte(((rankNumber - 1) * 16) + int(fileLetter-'a'))
 	}
 
-	halfmove, _ := strconv.Atoi(halfmoveString)
+	halfmoveInt, _ := strconv.Atoi(halfmoveString)
+	halfmove := byte(halfmoveInt)
 	fullmove, _ := strconv.Atoi(fullmoveString)
 
 	startPosition := position{board: startBoard, toMove: toMove, castling: castling, enPassantTarget: enPassantTarget, halfmove: halfmove, fullmove: fullmove}
@@ -252,7 +253,7 @@ func castleString(position position) string {
 func enPassantString(position position) string {
 	var enPassant string
 
-	if position.enPassantTarget == -1 {
+	if position.enPassantTarget == NoEnPassant {
 		enPassant = "-"
 	} else {
 		fileLetter := string(position.enPassantTarget%16 + 'a')

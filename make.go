@@ -1,9 +1,9 @@
 package main
 
 type moveArtifacts struct {
-	halfmove          int
+	halfmove          byte
 	castling          byte
-	enPassantPosition int
+	enPassantPosition byte
 	captured          piece
 }
 
@@ -23,7 +23,7 @@ func makeMove(position *position, move move) moveArtifacts {
 		captured:          0,
 	}
 
-	position.enPassantTarget = -1
+	position.enPassantTarget = NoEnPassant
 
 	if move&Capture != 0 {
 		position.halfmove = 0
@@ -121,7 +121,7 @@ func makeMove(position *position, move move) moveArtifacts {
 			position.board[move.From()] = 0
 			position.board[move.To()] = pieceMoved
 
-			position.enPassantTarget = int(move.From()+move.To()) / 2
+			position.enPassantTarget = byte(move.From()+move.To()) / 2
 			position.halfmove = 0
 		} else if move.isCapture() {
 			artifacts.captured = position.board[move.To()]
@@ -133,6 +133,7 @@ func makeMove(position *position, move move) moveArtifacts {
 	}
 
 	// Check if the rook was captured for castling purposes
+	// OPT
 	if artifacts.captured != 0 && artifacts.captured.is(Rook) {
 		color := artifacts.captured.color()
 

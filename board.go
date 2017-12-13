@@ -6,8 +6,8 @@ type position struct {
 	board           [128]piece
 	castling        byte
 	toMove          byte
-	enPassantTarget int
-	halfmove        int
+	enPassantTarget byte
+	halfmove        byte
 	fullmove        int
 }
 
@@ -77,5 +77,5 @@ func isEnPassantTarget(position position, index int, direction int) bool {
 	leftTarget := 15 * direction
 	rightTarget := 17 * direction
 
-	return position.enPassantTarget != -1 && (position.enPassantTarget == index+leftTarget || position.enPassantTarget == index+rightTarget)
+	return position.enPassantTarget != NoEnPassant && (position.enPassantTarget == byte(index+leftTarget) || position.enPassantTarget == byte(index+rightTarget))
 }

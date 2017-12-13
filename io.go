@@ -155,6 +155,23 @@ func showMoves(moves []move) {
 	}
 }
 
+func showBitboard(board uint64) {
+	var i int
+	var j int
+	fmt.Print("\n")
+
+	for i = 56; i >= 0; i -= 8 {
+		for j = 0; j < 8; j++ {
+			if (board & (1 << (uint(i) + uint(j)))) != 0 {
+				fmt.Print("x")
+			} else {
+				fmt.Print("-")
+			}
+		}
+		fmt.Print("\n")
+	}
+}
+
 func fromFEN(fen string) position {
 	sections := strings.Split(fen, " ")
 

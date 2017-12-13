@@ -5,6 +5,8 @@ var NotH uint64 = 0x7f7f7f7f7f7f7f7f
 
 func newBuildAttackMap(position position, toMove byte, index int) uint64 {
 
+	var attackMap uint64
+
 	var empty uint64
 	var queens uint64
 	var rooks uint64
@@ -25,22 +27,22 @@ func newBuildAttackMap(position position, toMove byte, index int) uint64 {
 				bishops |= 1 << map0x88ToStandard(i)
 			} else if piece.is(Queen) {
 				queens |= 1 << map0x88ToStandard(i)
+			} else if piece.is(King) {
+				attackMap |= kingAttacks(i)
 			}
 		}
 	}
 
-	showBitboard(empty)
-	showBitboard(queens)
-	showBitboard(rooks)
-	showBitboard(bishops)
-	showBitboard(southAttacks(queens|rooks, empty))
-	showBitboard(northAttacks(queens|rooks, empty))
-	showBitboard(eastAttacks(rooks, empty))
-	showBitboard(westAttacks(rooks, empty))
-	showBitboard(northEastAttacks(queens|bishops, empty))
-	showBitboard(northWestAttacks(queens|bishops, empty))
-	showBitboard(southEastAttacks(queens|bishops, empty))
-	showBitboard(southWestAttacks(queens|bishops, empty))
+	attackMap |= southAttacks(queens|rooks, empty)
+	attackMap |= northAttacks(queens|rooks, empty)
+	attackMap |= eastAttacks(queens|rooks, empty)
+	attackMap |= westAttacks(queens|rooks, empty)
+	attackMap |= northEastAttacks(queens|bishops, empty)
+	attackMap |= northWestAttacks(queens|bishops, empty)
+	attackMap |= southEastAttacks(queens|bishops, empty)
+	attackMap |= southWestAttacks(queens|bishops, empty)
+
+	showBitboard(attackMap)
 
 	return empty
 }
@@ -49,6 +51,29 @@ func map0x88ToStandard(index int) uint {
 	rank := index / 16
 	file := index % 16
 	return uint(rank*8 + file)
+}
+
+func kingAttacks(index int) uint64 {
+	var king uint64
+
+	standardIndex := map0x88ToStandard(index)
+
+	king |= 1 << (standardIndex + 8)
+	king |= 1 << (standardIndex - 8)
+
+	if standardIndex%8 != 0 {
+		king |= 1 << (standardIndex - 1)
+		king |= 1 << (standardIndex + 7)
+		king |= 1 << (standardIndex - 9)
+	}
+
+	if standardIndex%8 != 7 {
+		king |= 1 << (standardIndex + 1)
+		king |= 1 << (standardIndex + 9)
+		king |= 1 << (standardIndex - 7)
+	}
+
+	return king
 }
 
 func southAttacks(start uint64, empty uint64) uint64 {

@@ -307,90 +307,10 @@ func generateLegalMoves(position position) []move {
 	return legal
 }
 
-// doesn't handle en passant because currently only used for checking checks
-func buildAttackMap(position position, toMove byte, index int) [128]byte {
-	var attackMap [128]byte
-	for i := 0; i < BoardSize; i++ {
-		piece := position.board[i]
-
-		if isOnBoard(i) && piece.color() == toMove {
-			canAttack := attackArray[index-i+128]
-
-			switch piece.identity() {
-			case Queen:
-				if canAttack == attackNone || canAttack == attackN {
-					continue
-				}
-			case Bishop:
-				if !(canAttack == attackKQBbP || canAttack == attackKQBwP || canAttack == attackQB) {
-					continue
-				}
-			case Rook:
-				if !(canAttack == attackKQR || canAttack == attackQR) {
-					continue
-				}
-			case Knight:
-				if canAttack != attackN {
-					continue
-				}
-			case Pawn:
-				if !((toMove == White && canAttack == attackKQBwP) || (toMove == Black && canAttack == attackKQBbP)) {
-					continue
-				}
-			}
-
-			if piece.is(Pawn) {
-				// to change offset based on playing color
-				var direction int
-				if toMove == White {
-					direction = 1
-				} else {
-					direction = -1
-				}
-
-				leftAttack := i + 15*direction
-				rightAttack := i + 17*direction
-
-				if isOnBoard(leftAttack) {
-					attackMap[leftAttack] = 1
-				}
-				if isOnBoard(rightAttack) {
-					attackMap[rightAttack] = 1
-				}
-			} else {
-				for _, offset := range moveOffsets[piece.identity()] {
-					newIndex := i
-
-					for {
-						newIndex = newIndex + offset
-						// skip if new position is off the board
-						if !isOnBoard(newIndex) {
-							break
-						}
-
-						attackMap[newIndex] = 1
-
-						if piecePresent(position, newIndex) {
-							break
-						}
-
-						if !piece.isSliding() {
-							break
-						}
-					}
-				}
-
-			}
-		}
-
-	}
-
-	return attackMap
-}
-
 func isAttacked(position position, attackingColor byte, index int) bool {
-	attackMap := buildAttackMap(position, attackingColor, index)
-	return attackMap[index] == 1
+	attackMap := buildAttackMap(position, attackingColor)
+
+	return attackMap&(1<<map0x88ToStandard(index)) != 0
 }
 
 func isKingInCheck(position position, attackingColor byte) bool {

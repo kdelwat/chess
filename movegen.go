@@ -313,7 +313,7 @@ func buildAttackMap(position position, toMove byte, index int) [128]byte {
 	for i := 0; i < BoardSize; i++ {
 		piece := position.board[i]
 
-		if isOnBoard(i) && position.board[i].exists() && piece.color() == toMove {
+		if isOnBoard(i) && piece.color() == toMove {
 			canAttack := attackArray[index-i+128]
 
 			switch piece.identity() {

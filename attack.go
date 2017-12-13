@@ -31,6 +31,8 @@ func newBuildAttackMap(position position, toMove byte, index int) uint64 {
 				attackMap |= kingAttacks(i)
 			} else if piece.is(Knight) {
 				attackMap |= knightAttacks(i)
+			} else if piece.is(Pawn) {
+				attackMap |= pawnAttacks(i, toMove)
 			}
 		}
 	}
@@ -53,6 +55,30 @@ func map0x88ToStandard(index int) uint {
 	rank := index / 16
 	file := index % 16
 	return uint(rank*8 + file)
+}
+
+func pawnAttacks(index int, color byte) uint64 {
+	var pawn uint64
+
+	standardIndex := map0x88ToStandard(index)
+
+	if color == White && standardIndex%8 != 0 {
+		pawn |= 1 << (standardIndex + 7)
+	}
+
+	if color == Black && standardIndex%8 != 0 {
+		pawn |= 1 << (standardIndex - 9)
+	}
+
+	if color == White && standardIndex%8 != 7 {
+		pawn |= 1 << (standardIndex + 9)
+	}
+
+	if color == Black && standardIndex%8 != 7 {
+		pawn |= 1 << (standardIndex - 7)
+	}
+
+	return pawn
 }
 
 func knightAttacks(index int) uint64 {

@@ -2,7 +2,7 @@ package main
 
 type moveArtifacts struct {
 	halfmove          int
-	castling          castleMap
+	castling          byte
 	enPassantPosition int
 	captured          piece
 }
@@ -15,16 +15,10 @@ func makeQuietMove(position *position, from byte, to byte) {
 }
 
 func makeMove(position *position, move move) moveArtifacts {
-	var castleCopy = castleMap{
-		White: map[int]bool{KingCastle: position.castling[White][KingCastle],
-			QueenCastle: position.castling[White][QueenCastle]},
-		Black: map[int]bool{KingCastle: position.castling[Black][KingCastle],
-			QueenCastle: position.castling[Black][QueenCastle]},
-	}
 
 	var artifacts = moveArtifacts{
 		halfmove:          position.halfmove,
-		castling:          castleCopy,
+		castling:          position.castling,
 		enPassantPosition: position.enPassantTarget,
 		captured:          0,
 	}
@@ -39,19 +33,19 @@ func makeMove(position *position, move move) moveArtifacts {
 
 	// If the king or rook are moving, remove castle rights
 	if position.board[move.From()].is(King) {
-		position.castling[position.toMove][KingCastle] = false
-		position.castling[position.toMove][QueenCastle] = false
+		position.castling = setCastle(position.castling, KingCastle, position.toMove, false)
+		position.castling = setCastle(position.castling, QueenCastle, position.toMove, false)
 	}
 
 	if position.board[move.From()].is(Rook) {
 		if position.toMove == White && move.From() == 0 {
-			position.castling[White][QueenCastle] = false
+			position.castling = setCastle(position.castling, QueenCastle, White, false)
 		} else if position.toMove == White && move.From() == 7 {
-			position.castling[White][KingCastle] = false
+			position.castling = setCastle(position.castling, KingCastle, White, false)
 		} else if position.toMove == Black && move.From() == 112 {
-			position.castling[Black][QueenCastle] = false
+			position.castling = setCastle(position.castling, QueenCastle, Black, false)
 		} else if position.toMove == Black && move.From() == 119 {
-			position.castling[Black][KingCastle] = false
+			position.castling = setCastle(position.castling, KingCastle, Black, false)
 		}
 	}
 
@@ -63,8 +57,8 @@ func makeMove(position *position, move move) moveArtifacts {
 		}
 
 	} else if move.isCastle() {
-		position.castling[position.toMove][KingCastle] = false
-		position.castling[position.toMove][QueenCastle] = false
+		position.castling = setCastle(position.castling, KingCastle, position.toMove, false)
+		position.castling = setCastle(position.castling, QueenCastle, position.toMove, false)
 
 		var kingOrigin int
 		var rookOrigin int
@@ -142,19 +136,19 @@ func makeMove(position *position, move move) moveArtifacts {
 	if artifacts.captured != 0 && artifacts.captured.is(Rook) {
 		color := artifacts.captured.color()
 
-		if position.castling[color][QueenCastle] == true {
+		if getCastle(position.castling, QueenCastle, color) {
 			if color == White && move.To() == 0 {
-				position.castling[White][QueenCastle] = false
+				position.castling = setCastle(position.castling, QueenCastle, White, false)
 			} else if color == Black && move.To() == 112 {
-				position.castling[Black][QueenCastle] = false
+				position.castling = setCastle(position.castling, QueenCastle, Black, false)
 			}
 		}
 
-		if position.castling[color][KingCastle] == true {
+		if getCastle(position.castling, KingCastle, color) {
 			if color == White && move.To() == 7 {
-				position.castling[White][KingCastle] = false
+				position.castling = setCastle(position.castling, KingCastle, White, false)
 			} else if color == Black && move.To() == 119 {
-				position.castling[Black][KingCastle] = false
+				position.castling = setCastle(position.castling, KingCastle, Black, false)
 			}
 		}
 	}

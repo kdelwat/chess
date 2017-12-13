@@ -200,10 +200,11 @@ func fromFEN(fen string) position {
 		toMove = Black
 	}
 
-	var castling = map[byte]map[int]bool{
-		White: map[int]bool{KingCastle: strings.Contains(castleString, "K"), QueenCastle: strings.Contains(castleString, "Q")},
-		Black: map[int]bool{KingCastle: strings.Contains(castleString, "k"), QueenCastle: strings.Contains(castleString, "q")},
-	}
+	var castling byte
+	castling = setCastle(castling, KingCastle, White, strings.Contains(castleString, "K"))
+	castling = setCastle(castling, QueenCastle, White, strings.Contains(castleString, "Q"))
+	castling = setCastle(castling, KingCastle, Black, strings.Contains(castleString, "k"))
+	castling = setCastle(castling, QueenCastle, Black, strings.Contains(castleString, "q"))
 
 	// en passant squares
 	var enPassantTarget int
@@ -228,16 +229,16 @@ func fromFEN(fen string) position {
 func castleString(position position) string {
 	var castling string
 
-	if position.castling[White][KingCastle] {
+	if getCastle(position.castling, KingCastle, White) {
 		castling += "K"
 	}
-	if position.castling[White][QueenCastle] {
+	if getCastle(position.castling, QueenCastle, White) {
 		castling += "Q"
 	}
-	if position.castling[Black][KingCastle] {
+	if getCastle(position.castling, KingCastle, Black) {
 		castling += "k"
 	}
-	if position.castling[Black][QueenCastle] {
+	if getCastle(position.castling, QueenCastle, Black) {
 		castling += "q"
 	}
 

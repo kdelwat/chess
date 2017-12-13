@@ -146,11 +146,11 @@ func generateCastlingMoves(position position) []move {
 		attackingColor = White
 	}
 
-	if position.castling[position.toMove][KingCastle] && clearToCastle(position, KingCastle) && !isKingInCheck(position, attackingColor) {
+	if getCastle(position.castling, KingCastle, position.toMove) && clearToCastle(position, KingCastle) && !isKingInCheck(position, attackingColor) {
 		moves = append(moves, move(KingCastle))
 	}
 
-	if position.castling[position.toMove][QueenCastle] && clearToCastle(position, QueenCastle) && !isKingInCheck(position, attackingColor) {
+	if getCastle(position.castling, QueenCastle, position.toMove) && clearToCastle(position, QueenCastle) && !isKingInCheck(position, attackingColor) {
 		moves = append(moves, move(QueenCastle))
 	}
 

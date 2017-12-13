@@ -4,11 +4,45 @@ type castleMap map[byte]map[int]bool
 
 type position struct {
 	board           [128]piece
-	castling        castleMap
+	castling        byte
 	toMove          byte
 	enPassantTarget int
 	halfmove        int
 	fullmove        int
+}
+
+func setCastle(castling byte, side int, color byte, canCastle bool) byte {
+	var offset uint8
+
+	if side == QueenCastle {
+		offset++
+	}
+
+	if color == Black {
+		offset += 2
+	}
+
+	if canCastle {
+		castling |= 1 << offset
+	} else {
+		castling &= ^(1 << offset)
+	}
+
+	return castling
+}
+
+func getCastle(castling byte, side int, color byte) bool {
+	var offset uint8
+
+	if side == QueenCastle {
+		offset++
+	}
+
+	if color == Black {
+		offset += 2
+	}
+
+	return (castling&(1<<offset) != 0)
 }
 
 func isOnBoard(index int) bool {

@@ -18,31 +18,6 @@ var castlingChecks = map[byte]map[int][]int{
 	Black: map[int][]int{KingCastle: {117, 118}, QueenCastle: {114, 115}},
 }
 
-// Attack map and associated method created by Jonatan Pettersson
-// https://mediocrechess.blogspot.com.au/2006/12/guide-attacked-squares.html
-var attackNone = 0
-var attackKQR = 1
-var attackQR = 2
-var attackKQBwP = 3
-var attackKQBbP = 4
-var attackQB = 5
-var attackN = 6
-
-var attackArray = []int{
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
-	0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0,
-	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0,
-	5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0,
-	2, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 2, 6, 5, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 4, 1, 4, 6, 0, 0, 0, 0, 0,
-	0, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0,
-	0, 0, 6, 3, 1, 3, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6,
-	2, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 2, 0, 0, 5,
-	0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0,
-	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0,
-	0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0,
-	2, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-
 func createQuietMove(from int, to int) move {
 	var m move
 
@@ -305,12 +280,6 @@ func generateLegalMoves(position position) []move {
 	}
 
 	return legal
-}
-
-func isAttacked(position position, attackingColor byte, index int) bool {
-	attackMap := buildAttackMap(position, attackingColor)
-
-	return attackMap&(1<<map0x88ToStandard(index)) != 0
 }
 
 func isKingInCheck(position position, attackingColor byte) bool {

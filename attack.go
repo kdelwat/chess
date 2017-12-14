@@ -3,8 +3,34 @@ package main
 var NotA uint64 = 0xfefefefefefefefe
 var NotH uint64 = 0x7f7f7f7f7f7f7f7f
 
-func buildAttackMap(position position, toMove byte) uint64 {
+// Attack map and associated method created by Jonatan Pettersson
+// https://mediocrechess.blogspot.com.au/2006/12/guide-attacked-squares.html
+var attackNone = 0
+var attackKQR = 1
+var attackQR = 2
+var attackKQBwP = 3
+var attackKQBbP = 4
+var attackQB = 5
+var attackN = 6
 
+var attackArray = []int{
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
+	0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0,
+	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0,
+	5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0,
+	2, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 2, 6, 5, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 4, 1, 4, 6, 0, 0, 0, 0, 0,
+	0, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0,
+	0, 0, 6, 3, 1, 3, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6,
+	2, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 2, 0, 0, 5,
+	0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 0, 0, 0, 5, 0, 0, 0,
+	0, 0, 0, 5, 0, 0, 0, 0, 2, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0,
+	0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0,
+	2, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
+// Uses the Dumb7Fill algorithm for sliding piece attacks
+// implemented based on https://chessprogramming.wikispaces.com/Dumb7Fill
+func isAttacked(position position, toMove byte, index int) bool {
 	var attackMap uint64
 
 	var empty uint64
@@ -19,22 +45,43 @@ func buildAttackMap(position position, toMove byte) uint64 {
 				continue
 			}
 
+			canAttack := attackArray[index-i+128]
+
 			index := map0x88ToStandard(i)
 
-			if piece.is(Empty) {
+			switch piece.identity() {
+			case Queen:
+				if canAttack == attackNone || canAttack == attackN {
+					continue
+				} else {
+					queens |= 1 << index
+				}
+			case Bishop:
+				if !(canAttack == attackKQBbP || canAttack == attackKQBwP || canAttack == attackQB) {
+					continue
+				} else {
+					bishops |= 1 << index
+				}
+			case Rook:
+				if !(canAttack == attackKQR || canAttack == attackQR) {
+					continue
+				} else {
+					rooks |= 1 << index
+				}
+			case Knight:
+				if canAttack == attackN {
+					return true
+				}
+			case Pawn:
+				if (toMove == White && canAttack == attackKQBwP) || (toMove == Black && canAttack == attackKQBbP) {
+					return true
+				}
+			case King:
+				if canAttack == attackKQR || canAttack == attackKQBbP || canAttack == attackKQBwP {
+					return true
+				}
+			default:
 				empty |= 1 << index
-			} else if piece.is(Rook) {
-				rooks |= 1 << index
-			} else if piece.is(Bishop) {
-				bishops |= 1 << index
-			} else if piece.is(Queen) {
-				queens |= 1 << index
-			} else if piece.is(King) {
-				attackMap |= kingAttacks(index)
-			} else if piece.is(Knight) {
-				attackMap |= knightAttacks(index)
-			} else if piece.is(Pawn) {
-				attackMap |= pawnAttacks(index, toMove)
 			}
 		}
 	}
@@ -50,7 +97,7 @@ func buildAttackMap(position position, toMove byte) uint64 {
 
 	// showBitboard(westAttacks(queens|rooks, empty))
 
-	return attackMap
+	return attackMap&(1<<map0x88ToStandard(index)) != 0
 }
 
 func map0x88ToStandard(index int) uint {

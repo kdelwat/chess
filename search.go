@@ -11,8 +11,7 @@ func search(position position, depth int) move {
 	for _, move := range moves {
 		artifacts := makeMove(&position, move)
 
-		negamaxScore := negamax(&position, depth)
-
+		negamaxScore := alphaBeta(&position, -1000, 1000, depth)
 		if negamaxScore > bestScore {
 			bestScore = negamaxScore
 			bestMove = move
@@ -25,13 +24,12 @@ func search(position position, depth int) move {
 	return bestMove
 }
 
-// negamax algorithm from https://chessprogramming.wikispaces.com/Minimax
-func negamax(position *position, depth int) int {
+// alpha beta algorithm from pseudocode on
+// https://chessprogramming.wikispaces.com/Alpha-Beta
+func alphaBeta(position *position, alpha int, beta int, depth int) int {
 	if depth == 0 {
 		return evaluate(*position)
 	}
-
-	max := -1000
 
 	moves := generateMoves(*position)
 
@@ -39,14 +37,17 @@ func negamax(position *position, depth int) int {
 
 		artifacts := makeMove(position, move)
 
-		score := negamax(position, depth-1)
-		if score > max {
-			max = score
+		score := -alphaBeta(position, -beta, -alpha, depth-1)
+		if score >= beta {
+			unmakeMove(position, move, artifacts)
+			return beta
+		}
+		if score > alpha {
+			alpha = score
 		}
 
 		unmakeMove(position, move, artifacts)
 	}
 
-	return max
-
+	return alpha
 }

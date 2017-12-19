@@ -31,7 +31,7 @@ func alphaBeta(position *position, alpha int, beta int, depth int) int {
 		return evaluate(*position)
 	}
 
-	moves := generateMoves(*position)
+	moves := generateLegalMoves(*position)
 
 	for _, move := range moves {
 

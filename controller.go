@@ -2,10 +2,12 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type globalData struct {
@@ -19,7 +21,7 @@ type globalOptions struct {
 }
 
 type analysisOptions struct {
-	searchMode  string // one of "infinite", "depth", "nodes"
+	searchMode  string // one of "infinite", "depth", "nodes", "movetime"
 	searchMoves []string
 	ponder      bool
 	wtime       int
@@ -153,7 +155,6 @@ func applyMove(position position, move string) position {
 
 func startAnalysis(args []string) {
 	var options analysisOptions
-
 	// add ponder but no idea what it means
 
 	if argumentPresent("infinite", args) != -1 {
@@ -163,7 +164,7 @@ func startAnalysis(args []string) {
 		options.depth, _ = strconv.Atoi(args[argumentPresent("depth", args)+1])
 	} else if argumentPresent("movetime", args) != -1 {
 		options.searchMode = "movetime"
-		options.movetime, _ = strconv.Atoi(args[argumentPresent("depth", args)+1])
+		options.movetime, _ = strconv.Atoi(args[argumentPresent("movetime", args)+1])
 	} else if argumentPresent("nodes", args) != -1 {
 		options.searchMode = "nodes"
 		options.movetime, _ = strconv.Atoi(args[argumentPresent("nodes", args)+1])
@@ -201,9 +202,31 @@ func startAnalysis(args []string) {
 		options.movestogo, _ = strconv.Atoi(args[argumentPresent("movestogo", args)+1])
 	}
 
-	engineData.bestMove = getBestMove(engineData.position)
-	sendCommand("bestmove", engineData.bestMove)
+	// run the actual analysis
+	switch options.searchMode {
+	case "movetime":
+		fmt.Printf("Running with movetime %v\n", options.movetime)
 
+		//ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(options.movetime))
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(options.movetime))
+
+		ch := make(chan move)
+		go runSearch(ctx, cancel, engineData.position, 1000, ch)
+		go awaitBestMove(engineData.position, ch)
+
+		//close(ch)
+
+	}
+	//engineData.bestMove = getBestMove(engineData.position)
+	//sendCommand("bestmove", engineData.bestMove)
+
+}
+
+func awaitBestMove(position position, ch chan move) {
+	for move := range ch {
+		engineData.bestMove = toAlgebraic(position, move)
+	}
+	sendCommand("bestmove", engineData.bestMove)
 }
 
 func stopAnalysis() {

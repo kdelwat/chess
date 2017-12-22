@@ -1,6 +1,20 @@
 package main
 
-import "fmt"
+import "context"
+
+func runSearch(ctx context.Context, cancel context.CancelFunc, position position, depth int, ch chan move) {
+	for i := 1; i <= depth; i++ {
+		select {
+		case <-ctx.Done():
+			cancel()
+			close(ch)
+			return
+		default:
+		}
+		//fmt.Printf("Searching to depth %v\n", i)
+		ch <- search(position, i)
+	}
+}
 
 func search(position position, depth int) move {
 	moves := generateLegalMoves(position)
@@ -20,7 +34,7 @@ func search(position position, depth int) move {
 		unmakeMove(&position, move, artifacts)
 	}
 
-	fmt.Printf("Best move is %v with score %v\n", toAlgebraic(position, bestMove), bestScore)
+	//fmt.Printf("Best move is %v with score %v\n", toAlgebraic(position, bestMove), bestScore)
 	return bestMove
 }
 

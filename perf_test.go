@@ -10,6 +10,7 @@ type testPerft struct {
 
 func TestPerft(t *testing.T) {
 	cases := []testPerft{
+		{"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 5, 4865609},
 		// Martin Sedlak's test positions
 		// (http://www.talkchess.com/forum/viewtopic.php?t=47318)
 		// code copied from Evert Glebbeek at http://www.talkchess.com/forum/viewtopic.php?topic_view=threads&p=657840&t=59046
@@ -63,7 +64,7 @@ func TestPerft(t *testing.T) {
 	}
 
 	for _, test := range cases {
-		position := fromFen(test.fen)
+		position := fromFEN(test.fen)
 
 		results := perft(position, test.depth)
 

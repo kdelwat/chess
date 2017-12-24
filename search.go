@@ -5,7 +5,11 @@ import (
 	"fmt"
 )
 
+var cutoffs int
+var cutoffPositions = make(map[int]int)
+
 func runSearch(ctx context.Context, position position, depth int, ch chan move) {
+	cutoffs = 0
 	for i := 1; i <= depth; i++ {
 		result := search(position, i)
 		select {
@@ -36,7 +40,7 @@ func search(position position, depth int) move {
 		unmakeMove(&position, move, artifacts)
 	}
 
-	// fmt.Printf("Best move is %v with score %v\n", toAlgebraic(position, bestMove), bestScore)
+	fmt.Printf("Best move is %v with score %v\nCutoffs: %v (@ %v)\n", toAlgebraic(position, bestMove), bestScore, cutoffs, cutoffPositions)
 	return bestMove
 }
 
@@ -48,13 +52,15 @@ func alphaBeta(position *position, alpha int, beta int, depth int, color int) in
 		return evaluate(*position)
 	}
 	moves := generateLegalMoves(*position)
-
-	for _, move := range moves {
+	for index, move := range moves {
 
 		artifacts := makeMove(position, move)
 
 		score := -alphaBeta(position, -beta, -alpha, depth-1, -color)
 		if score >= beta {
+			cutoffs++
+			cutoffPositions[index]++
+
 			unmakeMove(position, move, artifacts)
 			return score
 		}

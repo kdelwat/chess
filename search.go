@@ -1,6 +1,9 @@
 package main
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 func runSearch(ctx context.Context, cancel context.CancelFunc, position position, depth int, ch chan move) {
 	for i := 1; i <= depth; i++ {
@@ -11,7 +14,7 @@ func runSearch(ctx context.Context, cancel context.CancelFunc, position position
 			return
 		default:
 		}
-		//fmt.Printf("Searching to depth %v\n", i)
+		fmt.Printf("Searching to depth %v\n", i)
 		ch <- search(position, i)
 	}
 }
@@ -24,8 +27,8 @@ func search(position position, depth int) move {
 
 	for _, move := range moves {
 		artifacts := makeMove(&position, move)
-
-		negamaxScore := alphaBeta(&position, -1000, 1000, depth)
+		// fmt.Printf("Move: %v\n", toAlgebraic(position, move))
+		negamaxScore := alphaBeta(&position, -1000, 1000, depth, 1)
 		if negamaxScore > bestScore {
 			bestScore = negamaxScore
 			bestMove = move
@@ -34,27 +37,27 @@ func search(position position, depth int) move {
 		unmakeMove(&position, move, artifacts)
 	}
 
-	//fmt.Printf("Best move is %v with score %v\n", toAlgebraic(position, bestMove), bestScore)
+	// fmt.Printf("Best move is %v with score %v\n", toAlgebraic(position, bestMove), bestScore)
 	return bestMove
 }
 
 // alpha beta algorithm from pseudocode on
 // https://chessprogramming.wikispaces.com/Alpha-Beta
-func alphaBeta(position *position, alpha int, beta int, depth int) int {
+func alphaBeta(position *position, alpha int, beta int, depth int, color int) int {
 	if depth == 0 {
+		// fmt.Printf("Value: %v (FEN: %v)\n", evaluate(*position), toFEN(*position))
 		return evaluate(*position)
 	}
-
 	moves := generateLegalMoves(*position)
 
 	for _, move := range moves {
 
 		artifacts := makeMove(position, move)
 
-		score := -alphaBeta(position, -beta, -alpha, depth-1)
+		score := -alphaBeta(position, -beta, -alpha, depth-1, -color)
 		if score >= beta {
 			unmakeMove(position, move, artifacts)
-			return beta
+			return score
 		}
 		if score > alpha {
 			alpha = score

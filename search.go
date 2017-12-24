@@ -5,17 +5,16 @@ import (
 	"fmt"
 )
 
-func runSearch(ctx context.Context, cancel context.CancelFunc, position position, depth int, ch chan move) {
+func runSearch(ctx context.Context, position position, depth int, ch chan move) {
 	for i := 1; i <= depth; i++ {
+		result := search(position, i)
 		select {
 		case <-ctx.Done():
-			cancel()
-			close(ch)
 			return
 		default:
+			fmt.Printf("Searching to depth %v\n", i)
+			ch <- result
 		}
-		fmt.Printf("Searching to depth %v\n", i)
-		ch <- search(position, i)
 	}
 }
 

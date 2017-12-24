@@ -211,7 +211,8 @@ func startAnalysis(args []string) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(options.movetime))
 
 		ch := make(chan move)
-		go runSearch(ctx, cancel, engineData.position, 1000, ch)
+		go waitToClose(ctx, ch, cancel)
+		go runSearch(ctx, engineData.position, 1000, ch)
 		go awaitBestMove(engineData.position, ch)
 
 		//close(ch)
@@ -219,6 +220,18 @@ func startAnalysis(args []string) {
 	}
 	//engineData.bestMove = getBestMove(engineData.position)
 	//sendCommand("bestmove", engineData.bestMove)
+
+}
+
+func waitToClose(ctx context.Context, ch chan move, cancel context.CancelFunc) {
+	for {
+		select {
+		case <-ctx.Done():
+			cancel()
+			close(ch)
+			return
+		}
+	}
 
 }
 

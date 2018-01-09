@@ -8,10 +8,18 @@ import (
 var cutoffs int
 var cutoffPositions = make(map[int]int)
 
+// aspiration window code from pseudocode at https://mediocrechess.blogspot.com.au/2007/01/guide-aspiration-windows-killer-moves.html
+var aspirationWindow = 10
+
 func runSearch(ctx context.Context, position position, depth int, ch chan move) {
 	cutoffs = 0
-	for i := 1; i <= depth; i++ {
-		result := search(position, i)
+
+	alpha := -1000
+	beta := 1000
+
+	for i := 1; i <= depth; {
+		result, bestAlpha := search(position, i, alpha, beta)
+
 		select {
 		case <-ctx.Done():
 			return
@@ -19,10 +27,20 @@ func runSearch(ctx context.Context, position position, depth int, ch chan move) 
 			fmt.Printf("Searching to depth %v\n", i)
 			ch <- result
 		}
+
+		if bestAlpha <= alpha || bestAlpha >= beta {
+			alpha = -1000
+			beta = 1000
+			continue
+		} else {
+			alpha = bestAlpha - aspirationWindow
+			beta = bestAlpha + aspirationWindow
+			i++
+		}
 	}
 }
 
-func search(position position, depth int) move {
+func search(position position, depth int, alpha int, beta int) (move, int) {
 	moves := generateLegalMoves(position)
 
 	bestScore := -1000
@@ -30,9 +48,9 @@ func search(position position, depth int) move {
 
 	for _, move := range moves {
 		artifacts := makeMove(&position, move)
-		// fmt.Printf("Move: %v\n", toAlgebraic(position, move))
-		negamaxScore := alphaBeta(&position, -1000, 1000, depth, 1)
-		if negamaxScore > bestScore {
+		negamaxScore := alphaBeta(&position, alpha, beta, depth)
+
+		if negamaxScore >= bestScore {
 			bestScore = negamaxScore
 			bestMove = move
 		}
@@ -41,29 +59,31 @@ func search(position position, depth int) move {
 	}
 
 	fmt.Printf("Best move is %v with score %v\nCutoffs: %v (@ %v)\n", toAlgebraic(position, bestMove), bestScore, cutoffs, cutoffPositions)
-	return bestMove
+	return bestMove, bestScore
 }
 
 // alpha beta algorithm from pseudocode on
 // https://chessprogramming.wikispaces.com/Alpha-Beta
-func alphaBeta(position *position, alpha int, beta int, depth int, color int) int {
+func alphaBeta(position *position, alpha int, beta int, depth int) int {
 	if depth == 0 {
-		// fmt.Printf("Value: %v (FEN: %v)\n", evaluate(*position), toFEN(*position))
 		return evaluate(*position)
 	}
+
 	moves := generateLegalMoves(*position)
 	for index, move := range moves {
 
 		artifacts := makeMove(position, move)
 
-		score := -alphaBeta(position, -beta, -alpha, depth-1, -color)
+		score := -alphaBeta(position, -beta, -alpha, depth-1)
+
 		if score >= beta {
 			cutoffs++
 			cutoffPositions[index]++
 
 			unmakeMove(position, move, artifacts)
-			return score
+			return beta
 		}
+
 		if score > alpha {
 			alpha = score
 		}

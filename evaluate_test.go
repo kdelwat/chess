@@ -1,26 +1,37 @@
 package main
 
 import "testing"
+import "strings"
 
 type evaluateTest struct {
-	fen      string
+	name     string
 	expected int
+	fen      string
 }
 
 func TestEvaluate(t *testing.T) {
 	cases := []evaluateTest{
-		{"r1b1k1nr/1p3ppp/pn1b4/8/1p2P3/2PP4/P1P2PPP/2BQK2R w Kkq - 0 11", -3},
-		{"r1b1k1nr/1p3ppp/pn1b4/8/1p2P3/2PP4/P1P2PPP/2BQK2R b Kkq - 0 11", 3},
+		{"Pawn testing", 330, "8/8/8/8/4P3/3P4/2P5/8 w KQkq - 0 11"},
+		{"Knight, rook, bishop", -685, "8/5n2/r2r4/8/8/6B1/3B4/8 w KQkq - 0 1"},
+		{"Asymetrical kings", 60, "8/8/8/8/8/8/8/K4k2 w KQkq - 0 1"},
+		{"​Starting position", 0, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"},
 	}
 
 	for _, test := range cases {
-		position := fromFEN(test.fen)
 
+		position := fromFEN(test.fen)
 		result := evaluate(position)
 
 		if result != test.expected {
-			t.Errorf("Evaluate test failed!\nFEN: %v\nExpected: %v\nActual: %v\n", test.fen, test.expected, result)
+			t.Errorf("Evaluate test failed! (%v)\nFEN: %v\nExpected: %v\nActual: %v\n", test.name, test.fen, test.expected, result)
 		}
 
+		mirroredPosition := fromFEN(strings.Replace(test.fen, "w", "b", 1))
+
+		mirroredResult := evaluate(mirroredPosition)
+
+		if mirroredResult != -test.expected {
+			t.Errorf("Mirrored evaluate test failed! (%v)\nFEN: %v\nExpected: %v\nActual: %v\n", test.name, test.fen, -test.expected, result)
+		}
 	}
 }

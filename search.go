@@ -8,17 +8,14 @@ import (
 var cutoffs int
 var cutoffPositions = make(map[int]int)
 
-// aspiration window code from pseudocode at https://mediocrechess.blogspot.com.au/2007/01/guide-aspiration-windows-killer-moves.html
-var aspirationWindow = 10
-
 func runSearch(ctx context.Context, position position, depth int, ch chan move) {
 	cutoffs = 0
 
-	alpha := -1000
-	beta := 1000
+	alpha := -100000
+	beta := 100000
 
-	for i := 1; i <= depth; {
-		result, bestAlpha := search(position, i, alpha, beta)
+	for i := 1; i <= depth; i++ {
+		result := search(position, i, alpha, beta)
 
 		select {
 		case <-ctx.Done():
@@ -27,28 +24,18 @@ func runSearch(ctx context.Context, position position, depth int, ch chan move) 
 			fmt.Printf("Searching to depth %v\n", i)
 			ch <- result
 		}
-
-		if bestAlpha <= alpha || bestAlpha >= beta {
-			alpha = -1000
-			beta = 1000
-			continue
-		} else {
-			alpha = bestAlpha - aspirationWindow
-			beta = bestAlpha + aspirationWindow
-			i++
-		}
 	}
 }
 
-func search(position position, depth int, alpha int, beta int) (move, int) {
+func search(position position, depth int, alpha int, beta int) move {
 	moves := generateLegalMoves(position)
 
-	bestScore := -1000
+	bestScore := -100000
 	var bestMove move
 
 	for _, move := range moves {
 		artifacts := makeMove(&position, move)
-		negamaxScore := alphaBeta(&position, alpha, beta, depth)
+		negamaxScore := -alphaBeta(&position, alpha, beta, depth)
 
 		if negamaxScore >= bestScore {
 			bestScore = negamaxScore
@@ -58,8 +45,7 @@ func search(position position, depth int, alpha int, beta int) (move, int) {
 		unmakeMove(&position, move, artifacts)
 	}
 
-	fmt.Printf("Best move is %v with score %v\nCutoffs: %v (@ %v)\n", toAlgebraic(position, bestMove), bestScore, cutoffs, cutoffPositions)
-	return bestMove, bestScore
+	return bestMove
 }
 
 // alpha beta algorithm from pseudocode on

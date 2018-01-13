@@ -66,9 +66,9 @@ func toAlgebraic(position position, move move) string {
 		promotionPiece := move.getPromotedPiece(pieceMoved)
 
 		return fmt.Sprintf("%v%v%v", indexToSquare(move.From()), indexToSquare(move.To()), pieceToAlgebraic(promotionPiece))
-	} else {
-		return fmt.Sprintf("%v%v", indexToSquare(move.From()), indexToSquare(move.To()))
 	}
+
+	return fmt.Sprintf("%v%v", indexToSquare(move.From()), indexToSquare(move.To()))
 }
 
 type perftResults struct {

@@ -1,22 +1,40 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"log"
+	"os"
+	"runtime/pprof"
+)
+
+var shouldProfile = flag.Bool("profile", false, "Enable CPU profiling")
+var profilePath = flag.String("profilePath", "/tmp/chessProfile.txt", "Location of CPU profile")
 
 func main() {
-	fmt.Println("Welcome to ultimate engine")
+	flag.Parse()
 
-	position := fromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-	depth := 5
-	results := perft(position, depth)
-	fmt.Printf("Perft with depth=%v\n", depth)
-	fmt.Printf("nodes          : %v\n", results.nodes)
-	fmt.Printf("quiet          : %v\n", results.quiet)
-	fmt.Printf("captures       : %v\n", results.captures)
-	fmt.Printf("enpassant      : %v\n", results.enpassant)
-	fmt.Printf("promotion      : %v\n", results.promotion)
-	fmt.Printf("promoCapture   : %v\n", results.promoCapture)
-	fmt.Printf("castleKingSide : %v\n", results.castleKingSide)
-	fmt.Printf("castleQueenSide: %v\n", results.castleQueenSide)
-	fmt.Printf("pawnJump       : %v\n", results.pawnJump)
-	fmt.Printf("checks         : %v\n", results.checks)
+	// Enable profiling on command line flag.
+	if *shouldProfile {
+		startProfile(*profilePath)
+		defer stopProfile()
+	}
+
+	startEngine()
+}
+
+func startProfile(filename string) {
+	profile, err := os.Create(filename)
+
+	if err != nil {
+		log.Fatal("Could not create profile: ", err)
+	}
+	err = pprof.StartCPUProfile(profile)
+
+	if err != nil {
+		log.Fatal("Could not start profile: ", err)
+	}
+}
+
+func stopProfile() {
+	pprof.StopCPUProfile()
 }

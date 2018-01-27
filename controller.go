@@ -52,7 +52,11 @@ func startEngine() {
 	for err == nil {
 		_, _ = errorLog.WriteString(input)
 		errorLog.Sync()
-		handleCommand(input)
+		result := handleCommand(input)
+
+		if !result {
+			break
+		}
 		input, err = reader.ReadString('\n')
 	}
 }
@@ -81,7 +85,7 @@ func sendDebug(message string) {
 	sendCommand("info", message)
 }
 
-func handleCommand(command string) {
+func handleCommand(command string) bool {
 	args := strings.Split(strings.TrimSpace(command), " ")
 
 	switch args[0] {
@@ -106,8 +110,10 @@ func handleCommand(command string) {
 	case "ponderhit":
 		ponderHit()
 	case "quit":
-		os.Exit(0)
+		return false
 	}
+
+	return true
 }
 
 func toggleDebug(setting string) {

@@ -58,7 +58,7 @@ func startEngine() {
 }
 
 func initialiseLog(filename string) *os.File {
-	errorLog, err := os.Create("/tmp/cadelChessLog.txt")
+	errorLog, err := os.Create(filename)
 	if err != nil {
 		fmt.Printf("Couldn't create file %v\n", err)
 	}
@@ -171,7 +171,9 @@ func startAnalysis(args []string) {
 	} else if argumentPresent("mate", args) != -1 {
 		options.searchMode = "mate"
 		options.movesToMate, _ = strconv.Atoi(args[argumentPresent("mate", args)+1])
-
+	} else {
+		options.searchMode = "depth"
+		options.depth, _ = strconv.Atoi(args[argumentPresent("depth", args)])
 	}
 
 	if argumentPresent("searchmoves", args) != -1 {
@@ -216,6 +218,9 @@ func startAnalysis(args []string) {
 		go awaitBestMove(engineData.position, ch)
 
 		//close(ch)
+	case "depth":
+		bestMove := search(engineData.position, options.depth, -100000, 100000)
+		sendCommand("bestmove", toAlgebraic(engineData.position, bestMove))
 
 	}
 	//engineData.bestMove = getBestMove(engineData.position)

@@ -1,12 +1,18 @@
 package main
 
-// values and piece tables from https://chessprogramming.wikispaces.com/Simplified+evaluation+function
-const KingWeight = 10000
-const QueenWeight = 900
-const RookWeight = 500
-const BishopWeight = 300
-const KnightWeight = 300
-const PawnWeight = 100
+/*
+These constants specify the value, in centipawns, of each piece when evaluating a position.
+
+A piece's value is a combination of its base weight and a modifier based on its position on the board. This reflects more subtle information about a position. For example, a knight in the centre of the board is more effective than one on the side, so it recieves a bonus.
+
+The values and piece tables used are from Tomasz Michniewski and can be found at https://chessprogramming.wikispaces.com/Simplified+evaluation+function.
+*/
+const kingWeight = 10000
+const queenWeight = 900
+const rookWeight = 500
+const bishopWeight = 300
+const knightWeight = 300
+const pawnWeight = 100
 
 var pawnPositions = []int{
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -74,11 +80,17 @@ var kingPositions = []int{
 	20, 30, 10, 0, 0, 10, 30, 20,
 }
 
-// return the negamax score for the given position. Eventually calculate this as
-// the same time as move making or generation
-// TODO: add mobility
-func evaluate(position position) int {
+/*
+evaluate returns an objective score representing the game's current result. A
+game starts at 0, with no player having the advantage. As it progresses, if
+white were to start taking pieces, the score would increase. If black were to
+instead perform strongly, the score would decrease.
 
+Since the move search function uses the Negamax algorithm, this evaluation is
+symmetrical. A position for black is the same as the identical one for white,
+but negated.
+*/
+func evaluate(position position) int {
 	var score int
 
 	var direction int
@@ -88,6 +100,8 @@ func evaluate(position position) int {
 		direction = -1
 	}
 
+	// Loop through the board, finding the score for each piece present. If the
+	// piece is white, add it to the total; if black, subtract it.
 	for i := 0; i < BoardSize; i++ {
 
 		piece := position.board[i]
@@ -103,17 +117,17 @@ func evaluate(position position) int {
 
 			switch piece.identity() {
 			case King:
-				score += (KingWeight + kingPositions[piecemapIndex]) * increment
+				score += (kingWeight + kingPositions[piecemapIndex]) * increment
 			case Queen:
-				score += (QueenWeight + queenPositions[piecemapIndex]) * increment
+				score += (queenWeight + queenPositions[piecemapIndex]) * increment
 			case Bishop:
-				score += (BishopWeight + bishopPositions[piecemapIndex]) * increment
+				score += (bishopWeight + bishopPositions[piecemapIndex]) * increment
 			case Rook:
-				score += (RookWeight + rookPositions[piecemapIndex]) * increment
+				score += (rookWeight + rookPositions[piecemapIndex]) * increment
 			case Knight:
-				score += (KnightWeight + knightPositions[piecemapIndex]) * increment
+				score += (knightWeight + knightPositions[piecemapIndex]) * increment
 			case Pawn:
-				score += (PawnWeight + pawnPositions[piecemapIndex]) * increment
+				score += (pawnWeight + pawnPositions[piecemapIndex]) * increment
 			}
 		}
 	}
@@ -122,6 +136,9 @@ func evaluate(position position) int {
 
 }
 
+// Map a 0x88 index to the required position in the score piecemaps. The
+// direction (1 for white, -1 for black) is required because the indices are
+// asymmetrical in 0x88 but symmetrical in the piecemap.
 func map0x88ToPiecemap(index int, direction int) uint {
 	rank := index / 16
 	file := index % 16

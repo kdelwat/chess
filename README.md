@@ -29,7 +29,7 @@ available analysis modes are depth-based and time-based. I recommend using a
 depth of four or five, or a move time of 5 seconds, for the best
 performance/time tradeoff.
 
-![A game in progress](https://imgur.com/jxtW6Z0)
+![A game in progress](https://pasteboard.co/H4YkKEg.png)
 
 ## Further improvements
 

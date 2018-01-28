@@ -2,75 +2,14 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
 )
 
-func getBestMove(position position) string {
-	rand.Seed(time.Now().Unix())
-
-	moves := generateMoves(position)
-
-	//fmt.Printf("Moves: %v\n", moves)
-	move := moves[rand.Intn(len(moves))]
-	alg := toAlgebraic(position, move)
-
-	//fmt.Printf("Got best move %v, gives %v\n", move, alg)
-	return alg
-}
-
-func pieceToAlgebraic(p piece) string {
-	var code string
-
-	switch p & Piece {
-	case King:
-		code = "k"
-	case Queen:
-		code = "q"
-	case Rook:
-		code = "r"
-	case Bishop:
-		code = "b"
-	case Knight:
-		code = "n"
-	default:
-		code = ""
-	}
-
-	return code
-}
-
-func indexToFile(index byte) string {
-	return fmt.Sprintf("%v", rune((index%16)+'a'))
-}
-
-func indexToSquare(index byte) string {
-	rank := index/16 + 1
-	file := rune((index % 16) + 'a')
-
-	return fmt.Sprintf("%c%v", file, rank)
-}
-
-func toAlgebraic(position position, move move) string {
-
-	if move.isKingCastle() {
-		return "0-0"
-	}
-
-	if move.isQueenCastle() {
-		return "0-0-0"
-	}
-
-	if move.isPromotion() || move.isPromotionCapture() {
-		pieceMoved := position.board[move.From()]
-		promotionPiece := move.getPromotedPiece(pieceMoved)
-
-		return fmt.Sprintf("%v%v%v", indexToSquare(move.From()), indexToSquare(move.To()), pieceToAlgebraic(promotionPiece))
-	}
-
-	return fmt.Sprintf("%v%v", indexToSquare(move.From()), indexToSquare(move.To()))
-}
-
+/*
+perft is a performance test for the move generation function. It generates a
+move tree to a given depth, recording various information. This information can
+be compared to known results to determine if the move generation is behaving
+correctly.
+*/
 type perftResults struct {
 	nodes           uint64
 	quiet           uint64
@@ -84,18 +23,22 @@ type perftResults struct {
 	checks          uint64
 }
 
-// Based on C code from https://chessprogramming.wikispaces.com/Perft
+// Run a perft analysis of the position to the given depth. This function is
+// based on the C code at https://chessprogramming.wikispaces.com/Perft
 func perft(position position, depth int) perftResults {
 	results := perftResults{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
+	// If the end of the tree is reached, increment the number of nodes found.
 	if depth == 0 {
 		return perftResults{1, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	}
 
+	// Generate all moves for the position.
 	moves := generateMoves(position)
 
 	checked := 0
 
+	// Make each move, recording information about the move.
 	for _, move := range moves {
 
 		artifacts := makeMove(&position, move)
@@ -141,6 +84,8 @@ func perft(position position, depth int) perftResults {
 		unmakeMove(&position, move, artifacts)
 	}
 
+	// If every move results in a check, return an empty statistics list, since
+	// the game has ended and there are no nodes to record.
 	if checked == len(moves) {
 		return perftResults{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	}
@@ -148,6 +93,8 @@ func perft(position position, depth int) perftResults {
 	return results
 }
 
+// Run a perft analysis, but divide the initial level of the move tree. This
+// allows for debugging the problematic paths of move generation.
 func dividePerft(position position, depth int) {
 	moves := generateLegalMoves(position)
 	var total uint64
@@ -164,4 +111,38 @@ func dividePerft(position position, depth int) {
 	}
 
 	fmt.Printf("TOTAL: %v\n", total)
+}
+
+// Convert an index to a number representing its file.
+func indexToFile(index byte) string {
+	return fmt.Sprintf("%v", rune((index%16)+'a'))
+}
+
+// Convert an index to a rank and file coordinate.
+func indexToSquare(index byte) string {
+	rank := index/16 + 1
+	file := rune((index % 16) + 'a')
+
+	return fmt.Sprintf("%c%v", file, rank)
+}
+
+// Convert a move to algebraic notation.
+func toAlgebraic(position position, move move) string {
+
+	if move.isKingCastle() {
+		return "0-0"
+	}
+
+	if move.isQueenCastle() {
+		return "0-0-0"
+	}
+
+	if move.isPromotion() || move.isPromotionCapture() {
+		pieceMoved := position.board[move.From()]
+		promotionPiece := move.getPromotedPiece(pieceMoved)
+
+		return fmt.Sprintf("%v%v%v", indexToSquare(move.From()), indexToSquare(move.To()), pieceToString(promotionPiece))
+	}
+
+	return fmt.Sprintf("%v%v", indexToSquare(move.From()), indexToSquare(move.To()))
 }

@@ -1,6 +1,6 @@
 package main
 
-const EngineName = "Ultimate Engine"
+const EngineName = "ChessSlayer"
 const EngineAuthor = "Cadel Watson"
 
 // Codes used to determine the identity of a piece.

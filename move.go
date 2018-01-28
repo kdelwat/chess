@@ -33,6 +33,10 @@ https://chessprogramming.wikispaces.com/Encoding+Moves.
 */
 type move uint32
 
+// Bitmasks for extracting move information.
+const moveTypeMask = 0xF << 16
+const promotionTypeMask = 0x3 << 16
+
 // Extract the index the piece is moving from.
 func (m move) From() byte {
 	return byte((m & (0xFF << 8)) >> 8)
@@ -45,7 +49,7 @@ func (m move) To() byte {
 
 // Is the move a quiet move?
 func (m move) isQuiet() bool {
-	return (m&MoveTypeMask == 0)
+	return (m&moveTypeMask == 0)
 }
 
 // Is the move a promotion?
@@ -70,17 +74,17 @@ func (m move) isCastle() bool {
 
 // Is the move a kingside castle?
 func (m move) isKingCastle() bool {
-	return ((m&MoveTypeMask)>>16 == 2)
+	return ((m&moveTypeMask)>>16 == 2)
 }
 
 // Is the move a queenside castle?
 func (m move) isQueenCastle() bool {
-	return ((m&MoveTypeMask)>>16 == 3)
+	return ((m&moveTypeMask)>>16 == 3)
 }
 
 // Is the move a double pawn push?
 func (m move) isDoublePawnPush() bool {
-	return ((m&MoveTypeMask)>>16 == 1)
+	return ((m&moveTypeMask)>>16 == 1)
 }
 
 // Is the move an en passant?
@@ -94,7 +98,7 @@ func (m move) isEnPassantCapture() bool {
 func (m move) getPromotedPiece(p piece) piece {
 	var promotedPiece piece
 
-	switch m & PromotionTypeMask {
+	switch m & promotionTypeMask {
 	case BishopPromotion:
 		promotedPiece |= Bishop
 	case KnightPromotion:

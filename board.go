@@ -54,6 +54,9 @@ type position struct {
 	fullmove        int
 }
 
+// Constant used to determine whether an index is off the board.
+const offBoard = 0x88
+
 // Set castling rights in the castle byte.
 func setCastle(castling byte, side int, color byte, canCastle bool) byte {
 	var offset uint8
@@ -93,7 +96,7 @@ func getCastle(castling byte, side int, color byte) bool {
 // Returns true if the index is on the physical board, false otherwise, using
 // the 0x88 form for a fast check.
 func isOnBoard(index int) bool {
-	return index&OffBoard == 0
+	return index&offBoard == 0
 }
 
 // Determines if there is a piece present at the index.

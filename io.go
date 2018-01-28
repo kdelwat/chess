@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+// Used to extract the piece identity information.
+const pieceIdentity = 0x0F
+
 // Maps the piece code (in byte form) to the correct string representation in
 // FEN.
 var fenCodes = map[byte]piece{
@@ -171,7 +174,7 @@ func toFEN(position position) string {
 func pieceToString(p piece) string {
 	var code string
 
-	switch p & Piece {
+	switch p & pieceIdentity {
 	case King:
 		code = "k"
 	case Queen:

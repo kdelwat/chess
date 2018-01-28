@@ -29,7 +29,7 @@ If the piece is white, the colour bit is 0. Otherwise, it is 1.
 */
 type piece byte
 
-const pieceIdentity = 0x0F
+const pieceIdentityMask = 0x0F
 const color = 0x40
 
 // Is the piece a sliding piece (bishop, rook, and queen)?
@@ -41,12 +41,12 @@ func (p piece) isSliding() bool {
 
 // Is the piece the same as the target type?
 func (p piece) is(target piece) bool {
-	return (p&pieceIdentity == target)
+	return (p&pieceIdentityMask == target)
 }
 
 // Is there a piece on the square?
 func (p piece) exists() bool {
-	return (p&pieceIdentity != 0)
+	return (p&pieceIdentityMask != 0)
 }
 
 // Find the colour of the piece.
@@ -56,5 +56,5 @@ func (p piece) color() byte {
 
 // Find the type of the piece.
 func (p piece) identity() piece {
-	return p & pieceIdentity
+	return p & pieceIdentityMask
 }
